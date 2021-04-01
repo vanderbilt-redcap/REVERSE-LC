@@ -1,6 +1,7 @@
 <?php
 
 define("SCREENING_LOG_DATA_AJAX_URL", $module->getUrl('ajax/getScreeningLogData.php'));
+define("ENROLLMENT_CHART_DATA_AJAX_URL", $module->getUrl('ajax/getEnrollmentChartData.php'));
 $loader = new \Twig\Loader\FilesystemLoader(__DIR__."/templates");
 $twig = new \Twig\Environment($loader);
 
@@ -22,6 +23,7 @@ if ($authorized == 3) {
 }
 
 $screeningLogData = $module->getScreeningLogData();
+$enrollmentChartData = $module->getEnrollmentChartData();
 $exclusionData = $module->getExclusionReportData();
 $screenFailData = $module->getScreenFailData();
 $clipboardImageSource = $module->getUrl("images/clipboard.PNG");
@@ -29,13 +31,13 @@ $folderImageSource = $module->getUrl("images/folder.png");
 $helpfulLinks = $module->getHelpfulLinks();
 $helpfulLinkFolders = $module->getHelpfulLinkFolders();
 
-
 echo $template->render([
 	"allSites" => $allSitesData,
 	"mySite" => $mySitesData,
 	"authorized" => $authorized,
 	"site_names" => $site_names,
 	"screeningLog" => $screeningLogData,
+	"enrollmentChart" => $enrollmentChartData,
 	"exclusion" => $exclusionData,
 	"screenFail" => $screenFailData,
 	"helpfulLinks" => $helpfulLinks,

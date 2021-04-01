@@ -74,9 +74,17 @@ tr > td {
 tr > td:nth-child(1) {
     text-align: left;
 }
+#allSitesData tr.selected > td {
+	background-color: #b4c7e777;
+}
 #allSitesData td:nth-child(2) {
 	font-weight: 600;
 }
+#allSitesData tr:not(.first_row):hover:not(.selected) > td {
+	transition: background-color 0.15s;
+    background-color: #e5f0f0;
+}
+
 .row {
     margin: 0;
 }

@@ -21,21 +21,24 @@
 			"enrolled": 1,
 			"treated": 2,
 			"fpe": "2020-01-02",
-			"lpe": "2020-01-02"
+			"lpe": "2020-01-02",
+			"dag": "001__site_a"
 		},
 		{
 			"name": "002 - Site B",
 			"enrolled": 2,
 			"treated": 0,
 			"fpe": "2020-01-01",
-			"lpe": "2020-03-01"
+			"lpe": "2020-03-01",
+			"dag": "002__site_b"
 		},
 		{
 			"name": "003 - Site C",
 			"enrolled": 0,
 			"treated": 1,
 			"fpe": "-",
-			"lpe": "-"
+			"lpe": "-",
+			"dag": "003__site_c"
 		}
 	]
 }
