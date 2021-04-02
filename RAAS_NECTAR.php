@@ -40,8 +40,10 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		parent::__construct();
 
 		define("CSS_PATH_1",$this->getUrl("css/style.css"));
+		define("CSS_MAIN_ACTIVE", $this->getUrl("css/mainActive.css"));
+
 		define("JS_PATH_1",$this->getUrl("js/dashboard.js"));
-		define("LOGO_LINK", $this->getUrl("images/passItOnLogo.png"));
+		define("LOGO_LINK", $this->getUrl("images/necarLogo.png"));
 
 		require_once(__DIR__."/vendor/autoload.php");
 	}
