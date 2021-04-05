@@ -1,0 +1,70 @@
+{% extends "baseActivation.twig" %}
+
+{% block content %}
+     <div class="row">
+                    {% for item in data %}
+                        <h2 style="display:block; width:100%;"><a href="#" style="color:#000; text-decoration:none;">{{ item }}</a></h2>
+                         <table class="table activation-tables">
+                        <tr>    
+                            <td width="1%" style="background-color:#D8AB4C;"></td>
+                            <td width="25%"> </td>
+                            <td width="7%">Owner</td>
+                            <td width="15.25%">Design</td>
+                            <td width="15.25%">R&D</td>
+                            <td width="15.25%">Testing</td>
+                            <td width="15.25%">Marketing</td>
+                        </tr>
+                        <tr>    
+                            <td width="1%" style="background-color:#D8AB4C;"></td>
+                            <td width="25%">The new HTML editor </td>
+                            <td width="7%">Image Here</td>
+                            <td width="15.25%" style="background-color:#5fa052; color:#fff;">Done</td>
+                            <td width="15.25%" style="background-color:#5fa052; color:#fff;">Released</td>
+                            <td width="15.25%" style="background-color:#5fa052; color:#fff;">Launched</td>
+                            <td width="15.25%" style="background-color:#ff9d56; color:#fff;">Working on it</td>
+                        </tr>
+                         <tr>    
+                            <td width="1%" style="background-color:#D8AB4C;"></td>
+                            <td width="25%">Ecommerce platform </td>
+                            <td width="7%">Image Here</td>
+                            <td width="15.25%" style="background-color:#5fa052; color:#fff;">Done</td>
+                            <td width="15.25%" style="background-color:#5fa052; color:#fff;">Released</td>
+                            <td width="15.25%" style="background-color:#A62700; color:#fff;">Waiting</td>
+                            <td width="15.25%" style="background-color:#ff9d56; color:#fff;">Working on it</td>
+                        </tr>
+                          <tr>    
+                            <td width="1%" style="background-color:#D8AB4C;"></td>
+                            <td width="25%">Home Page Remake </td>
+                            <td width="7%">Image Here</td>
+                            <td width="15.25%" style="background-color:#5fa052; color:#fff;">Done</td>
+                            <td width="15.25%" style="background-color:#805b87; color:#fff;">In Search</td>
+                            <td width="15.25%" style="background-color:#ff9d56; color:#fff;">Working on it</td>
+                            <td width="15.25%" style="background-color:#b8b8b8"></td>
+                        </tr>
+                         <tr>    
+                            <td width="1%" style="background-color:#D8AB4C;"></td>
+                            <td width="25%">Template viewer </td>
+                            <td width="7%">Image Here</td>
+                            <td width="15.25%" style="background-color:#5fa052; color:#fff;">Done</td>
+                            <td width="15.25%" style="background-color:#ff9d56; color:#fff;">Working on it</td>
+                            <td width="15.25%" style="background-color:#b8b8b8"></td>
+                            <td width="15.25%" style="background-color:#b8b8b8"></td>
+                        </tr>
+
+                          <tr>    
+                            <td width="1%" style="background-color:#D8AB4C;"></td>
+                            <td width="25%">New Analytics </td>
+                            <td width="7%">Image Here</td>
+                            <td width="15.25%" style="background-color:#b8b8b8"></td>
+                            <td width="15.25%" style="background-color:#b8b8b8"></td>
+                            <td width="15.25%" style="background-color:#b8b8b8"></td>
+                            <td width="15.25%" style="background-color:#b8b8b8"></td>
+                        </tr>
+                       
+                            
+
+                       </table>
+                    {% endfor %}
+                </div>
+
+{% endblock %}

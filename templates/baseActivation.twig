@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{% block head %}
+	<link rel="stylesheet" href="{{ constant('APP_PATH_WEBPACK') }}css/bundle.css" />
+        {% if(constant("CSS_MAIN_ACTIVE")) %}
+		<link rel="stylesheet" href="{{ constant("CSS_MAIN_ACTIVE") }}" />
+		{% endif %}
+		<title>{% block title %}Activation{%  endblock %}</title>
+	{% endblock %}
+</head>
+<body>
+<!-- Wrapper -->
+    <div class="main-wrapper">
+        <div class="sidebar">
+            <div class="logo">
+                <a href="#">
+                    <img class="img-fluid" style="max-height: 100px;" src="{{ constant("LOGO_LINK") }}">
+                </a>
+            </div>
+            <div class="sidebar-wrapper">
+                <ul class="nav">
+                    <li class="nav-item active">
+                        <a href="#" class="nav-link">
+                            <span>Feed</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span>Main Boards</span>
+                        </a>
+                    </li>
+                     <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span>Shareable Boards</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="main-area">
+            <div class="content">
+                <div class="container-fluid">
+                	{% block content %}{% endblock %}   
+                </div>
+            <div>
+        </div>
+    </div>
+</body>
+</html>
