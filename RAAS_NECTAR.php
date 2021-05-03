@@ -722,6 +722,34 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		return $folders;
 	}
 	
+	// RAAS additions
+	public function getVCCSiteStartUpFieldList() {
+		$regulatoryPID = $this->getProjectSetting('site_regulation_project');
+		if (empty($regulatoryPID)) {
+			throw new \Exception("The RAAS/NECTAR module couldn't get start-up fields because the 'RAAS_NECTAR Site Regulation Project ID' setting is not configured. Please configure the module by selecting a regulatory project.");
+		}
+		
+		$reg_dd = json_decode(\REDCap::getDataDictionary($regulatoryPID, 'json'));
+		if (empty($regulatoryPID)) {
+			throw new \Exception("The RAAS/NECTAR module couldn't get start-up fields -- fatal error trying to decode the Data Dictionary (json) for the regulatory project (PID: " . $regulatoryPID . ")");
+		}
+		
+		$field_names = [];
+		foreach($reg_dd as $field_info) {
+			$name = $field_info->field_name;
+			if ($field_info->form_name == 'vcc_site_start_up') {
+				$field_names[] = $name;
+			}
+		}
+		
+		return $field_names;
+	}
+	
+	public function getSiteStartupData() {
+		// return array of site objects, each with data used to build Site Activation tables
+		return ['a', 'b', 'c'];
+	}
+	
 	// hooks
 	public function redcap_module_link_check_display($pid, $link) {
 		if ($link['name'] == 'RAAS_NECTAR Dashboard') {

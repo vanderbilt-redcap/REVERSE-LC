@@ -248,3 +248,16 @@ button.main_page {
 	width: 50%;
 	height: 50%;
 }
+
+
+div.activation-table-container {
+	/* margin: 24px; */
+}
+
+.activation-tables{
+    background: #e6e6e6;
+}
+
+.activation-tables td{
+    border: 2px solid white;
+}

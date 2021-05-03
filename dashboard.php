@@ -10,6 +10,7 @@ $template = $twig->load("dashboard.twig");
 /** @var $module \Vanderbilt\RAAS_NECTAR\RAAS_NECTAR */
 $allSitesData = $module->getAllSitesData();
 $mySitesData = $module->getMySiteData();
+$siteStartupData = $module->getSiteStartupData();
 $authorized = $module->user->authorized;
 
 // prepare site names for Screening Log Report dropdown
@@ -43,5 +44,6 @@ echo $template->render([
 	"helpfulLinks" => $helpfulLinks,
 	"helpfulLinkFolders" => $helpfulLinkFolders,
 	"clipboardImageSource" => $clipboardImageSource,
-	"folderImageSource" => $folderImageSource
+	"folderImageSource" => $folderImageSource,
+	"siteStartupData" => $siteStartupData
 ]);

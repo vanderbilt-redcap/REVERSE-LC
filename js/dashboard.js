@@ -7,6 +7,8 @@ function hideAllTabs() {
     $("#screening-button").removeClass('active').addClass('nonactive');
     $("#links").hide();
     $("#links-button").removeClass('active').addClass('nonactive');
+    $("#activation").hide();
+    $("#activation-button").removeClass('active').addClass('nonactive');
 }
 
 function activateTab(tabSelector) {
@@ -172,4 +174,6 @@ $("document").ready(function() {
 	$("#links button.close-folder").hide();
 	
 	$('.sortable').tablesorter();
+	
+	activateTab('activation');
 });

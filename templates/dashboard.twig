@@ -21,6 +21,10 @@
 				<div class='top-border'></div>
 				<div class='name'><b>Helpful Links</b></div>
 			</a>
+			<a class="tab nonactive" id="activation-button" onclick="activateTab('activation');">
+				<div class='top-border'></div>
+				<div class='name'><b>Site Activation</b></div>
+			</a>
 		</div>
 	</div>
 	{#<div class='row' style="height:1px"></div>#}
@@ -472,6 +476,73 @@
 				<h3>There are no links to show at the moment</h3>
 				<small>Check back soon to find a list of helpful resources!</small>
 			{% endif %}
+		</div>
+	</div>
+	<div id="activation">
+		{# blue bar #}
+		<div class="blue_bar"></div>
+		<div class="row">
+			{% for site in siteStartupData %}
+			{# <div class='activation-table-container'> #}
+				<h2 style="display:block; width:100%;"><a href="#" style="color:#000; text-decoration:none;">{{ site }}</a></h2>
+				<table class="table activation-tables">
+					<tr>    
+						<td width="1%" style="background-color:#D8AB4C;"></td>
+						<td width="25%"> </td>
+						<td width="7%">Owner</td>
+						<td width="15.25%">Design</td>
+						<td width="15.25%">R&D</td>
+						<td width="15.25%">Testing</td>
+						<td width="15.25%">Marketing</td>
+					</tr>
+					<tr>    
+						<td width="1%" style="background-color:#D8AB4C;"></td>
+						<td width="25%">The new HTML editor </td>
+						<td width="7%">Image Here</td>
+						<td width="15.25%" style="background-color:#5fa052; color:#fff;">Done</td>
+						<td width="15.25%" style="background-color:#5fa052; color:#fff;">Released</td>
+						<td width="15.25%" style="background-color:#5fa052; color:#fff;">Launched</td>
+						<td width="15.25%" style="background-color:#ff9d56; color:#fff;">Working on it</td>
+					</tr>
+					<tr>    
+						<td width="1%" style="background-color:#D8AB4C;"></td>
+						<td width="25%">Ecommerce platform </td>
+						<td width="7%">Image Here</td>
+						<td width="15.25%" style="background-color:#5fa052; color:#fff;">Done</td>
+						<td width="15.25%" style="background-color:#5fa052; color:#fff;">Released</td>
+						<td width="15.25%" style="background-color:#A62700; color:#fff;">Waiting</td>
+						<td width="15.25%" style="background-color:#ff9d56; color:#fff;">Working on it</td>
+					</tr>
+					<tr>    
+						<td width="1%" style="background-color:#D8AB4C;"></td>
+						<td width="25%">Home Page Remake </td>
+						<td width="7%">Image Here</td>
+						<td width="15.25%" style="background-color:#5fa052; color:#fff;">Done</td>
+						<td width="15.25%" style="background-color:#805b87; color:#fff;">In Search</td>
+						<td width="15.25%" style="background-color:#ff9d56; color:#fff;">Working on it</td>
+						<td width="15.25%" style="background-color:#b8b8b8"></td>
+					</tr>
+					<tr>    
+						<td width="1%" style="background-color:#D8AB4C;"></td>
+						<td width="25%">Template viewer </td>
+						<td width="7%">Image Here</td>
+						<td width="15.25%" style="background-color:#5fa052; color:#fff;">Done</td>
+						<td width="15.25%" style="background-color:#ff9d56; color:#fff;">Working on it</td>
+						<td width="15.25%" style="background-color:#b8b8b8"></td>
+						<td width="15.25%" style="background-color:#b8b8b8"></td>
+					</tr>
+					<tr>    
+						<td width="1%" style="background-color:#D8AB4C;"></td>
+						<td width="25%">New Analytics </td>
+						<td width="7%">Image Here</td>
+						<td width="15.25%" style="background-color:#b8b8b8"></td>
+						<td width="15.25%" style="background-color:#b8b8b8"></td>
+						<td width="15.25%" style="background-color:#b8b8b8"></td>
+						<td width="15.25%" style="background-color:#b8b8b8"></td>
+					</tr>
+				</table>
+			{# </div> #}
+			{% endfor %}
 		</div>
 	</div>
 </div>
