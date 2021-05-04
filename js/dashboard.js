@@ -175,5 +175,16 @@ $("document").ready(function() {
 	
 	$('.sortable').tablesorter();
 	
+	$("tr.data td:nth-child(n+3)").each(function(i, td) {
+		var cell = $(td);
+		if (cell.text() == "Unchecked") {
+			cell.removeClass('green orange');
+			cell.addClass('orange');
+		} else if (cell.text()) {
+			cell.removeClass('green orange');
+			cell.addClass('green');
+		}
+	});
+	
 	activateTab('activation');
 });

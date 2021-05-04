@@ -30,7 +30,7 @@
 	{#<div class='row' style="height:1px"></div>#}
 	<div id="allSitesData" class="row">
 		<div class="col-6">
-			<table>
+			<table class="dashboard">
 				<thead>
 					<tr>
 						<th></th>
@@ -139,7 +139,7 @@
 		</div>
 	</div>
 	<div id="mySiteData">
-		<table class="sortable">
+		<table class="dashboard sortable">
 			<thead>
 			<tr>
 				{% if authorized == '3' %}
@@ -192,7 +192,7 @@
 					</select>
 					
 					{# table #}
-					<table>
+					<table class="dashboard">
 						<thead>
 							<tr>
 								<th>Week</th>
@@ -280,7 +280,7 @@
 			<div class="row">
 				<div class="col-6">
 					{# table #}
-					<table>
+					<table class="dashboard">
 						<thead>
 							<tr>
 								<th>Criteria</th>
@@ -361,7 +361,7 @@
 			<div class="row">
 				<div class="col-6">
 					{# table #}
-					<table>
+					<table class="dashboard">
 						<thead>
 							<tr>
 								<th>Criteria</th>
@@ -483,65 +483,232 @@
 		<div class="blue_bar"></div>
 		<div class="row">
 			{% for site in siteStartupData %}
-			{# <div class='activation-table-container'> #}
-				<h2 style="display:block; width:100%;"><a href="#" style="color:#000; text-decoration:none;">{{ site }}</a></h2>
+			<div class="activation-container">
+				<h2>{{ site.record_id }}</h2>
 				<table class="table activation-tables">
-					<tr>    
-						<td width="1%" style="background-color:#D8AB4C;"></td>
-						<td width="25%"> </td>
-						<td width="7%">Owner</td>
-						<td width="15.25%">Design</td>
-						<td width="15.25%">R&D</td>
-						<td width="15.25%">Testing</td>
-						<td width="15.25%">Marketing</td>
+					<tr>
+						<td></td>
+						<td><p>Vanguard: {{ site.selected_vanguard }} Biomarker: {{ site.site_selected_biomarker }}</p></td>
+						<td>Site Status for Category</td>
+						<td>sIRB Survey Sent</td>
+						<td>sIRB Survey Received</td>
+						<td>sIRB Survey Accepted and Part 2 provided</td>
+						<td>sIRB Survey Accepted and Part 2 provided</td>
+						<td>Part 2 ICD Received Back from Site</td>
+						<td>Part 2 ICD Reviewed by VCC</td>
+						<td>Part 2 ICD Approved by VCC</td>
+						<td>Institutional Profile Complete</td>
+						<td>HRP Survey Complete</td>
+						<td>PI Survey Complete</td>
+						<td>sIRB Site Add Ready</td>
+						<td>sIRB Site Add</td>
 					</tr>
-					<tr>    
-						<td width="1%" style="background-color:#D8AB4C;"></td>
-						<td width="25%">The new HTML editor </td>
-						<td width="7%">Image Here</td>
-						<td width="15.25%" style="background-color:#5fa052; color:#fff;">Done</td>
-						<td width="15.25%" style="background-color:#5fa052; color:#fff;">Released</td>
-						<td width="15.25%" style="background-color:#5fa052; color:#fff;">Launched</td>
-						<td width="15.25%" style="background-color:#ff9d56; color:#fff;">Working on it</td>
+					<tr class="data">
+						<td></td>
+						<td>sIRB Status</td>
+						<td>{{ site.sirb_status }}</td>
+						<td>{{ site.vcc_survey_sent }}</td>
+						<td>{{ site.vcc_survey_received }}</td>
+						<td>{{ site.vcc_survey_accepted }}</td>
+						<td>{{ site.vcc_survey_accepted }}</td>
+						<td>{{ site.vcc_pt2_received }}</td>
+						<td>{{ site.vcc_pt2_reviewed }}</td>
+						<td>{{ site.vcc_pt2_approved }}</td>
+						<td>{{ site.institutional_profile_complete }}</td>
+						<td>{{ site.hrp_agreement }}</td>
+						<td>{{ site.pi_survey }}</td>
+						<td>{{ site.site_add_ready }}</td>
+						<td>{{ site.site_add }}</td>
 					</tr>
-					<tr>    
-						<td width="1%" style="background-color:#D8AB4C;"></td>
-						<td width="25%">Ecommerce platform </td>
-						<td width="7%">Image Here</td>
-						<td width="15.25%" style="background-color:#5fa052; color:#fff;">Done</td>
-						<td width="15.25%" style="background-color:#5fa052; color:#fff;">Released</td>
-						<td width="15.25%" style="background-color:#A62700; color:#fff;">Waiting</td>
-						<td width="15.25%" style="background-color:#ff9d56; color:#fff;">Working on it</td>
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td>Template Sent</td>
+						<td>Partially Executed</td>
+						<td>Fully Executed</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
 					</tr>
-					<tr>    
-						<td width="1%" style="background-color:#D8AB4C;"></td>
-						<td width="25%">Home Page Remake </td>
-						<td width="7%">Image Here</td>
-						<td width="15.25%" style="background-color:#5fa052; color:#fff;">Done</td>
-						<td width="15.25%" style="background-color:#805b87; color:#fff;">In Search</td>
-						<td width="15.25%" style="background-color:#ff9d56; color:#fff;">Working on it</td>
-						<td width="15.25%" style="background-color:#b8b8b8"></td>
+					<tr class="data">
+						<td></td>
+						<td>Contract</td>
+						<td>{{ site.sirb_status_2 }}</td>
+						<td>{{ site.template_sent }}</td>
+						<td>{{ site.contract_pe }}</td>
+						<td>{{ site.contract_fe }}</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
 					</tr>
-					<tr>    
-						<td width="1%" style="background-color:#D8AB4C;"></td>
-						<td width="25%">Template viewer </td>
-						<td width="7%">Image Here</td>
-						<td width="15.25%" style="background-color:#5fa052; color:#fff;">Done</td>
-						<td width="15.25%" style="background-color:#ff9d56; color:#fff;">Working on it</td>
-						<td width="15.25%" style="background-color:#b8b8b8"></td>
-						<td width="15.25%" style="background-color:#b8b8b8"></td>
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td>1572</td>
+						<td>IB Acknowledgement</td>
+						<td>Laboratory Documents</td>
+						<td>Protocol Signature Page</td>
+						<td>sIRB Approval</td>
+						<td>Site Address/Contact Information</td>
+						<td>User Access Form</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
 					</tr>
-					<tr>    
-						<td width="1%" style="background-color:#D8AB4C;"></td>
-						<td width="25%">New Analytics </td>
-						<td width="7%">Image Here</td>
-						<td width="15.25%" style="background-color:#b8b8b8"></td>
-						<td width="15.25%" style="background-color:#b8b8b8"></td>
-						<td width="15.25%" style="background-color:#b8b8b8"></td>
-						<td width="15.25%" style="background-color:#b8b8b8"></td>
+					<tr class="data">
+						<td></td>
+						<td>Site Documents</td>
+						<td>{{ site.ctom_site_docs_approve }}</td>
+						<td>{{ site.doc_1572 }}</td>
+						<td>{{ site.ib_ack }}</td>
+						<td>{{ site.lab_docs }}</td>
+						<td>{{ site.psp_signed }}</td>
+						<td>{{ site.sirb_approved }}</td>
+						<td>{{ site.site_info_confirm }}</td>
+						<td>{{ site.ua_received }}</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td>CV</td>
+						<td>DOA</td>
+						<td>License</td>
+						<td>Financial Disclosure</td>
+						<td>Handwriting Profile</td>
+						<td>Good Clinical Practice Training</td>
+						<td>Human Subjects Protection Training</td>
+						<td>Site Related Training</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+					<tr class="data">
+						<td></td>
+						<td>PI Documents</td>
+						<td></td>
+						<td>{{ site.cv___1 }}</td>
+						<td>{{ site.doa_pi___1 }}</td>
+						<td>{{ site.license___1 }}</td>
+						<td>{{ site.fdf___1 }}</td>
+						<td>{{ site.hand_prof___1 }}</td>
+						<td>{{ site.gcp___1 }}</td>
+						<td>{{ site.hsp___1 }}</td>
+						<td>{{ site.training___1 }}</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td>CV</td>
+						<td>DOA</td>
+						<td>License</td>
+						<td>Financial Disclosure</td>
+						<td>Handwriting Profile</td>
+						<td>Good Clinical Practice Training</td>
+						<td>Human Subjects Protection Training</td>
+						<td>Site Related Training</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+					<tr class="data">
+						<td></td>
+						<td>Primary Coordinator</td>
+						<td></td>
+						<td>{{ site.cv___2 }}</td>
+						<td>{{ site.doa_pi___2 }}</td>
+						<td>{{ site.license___2 }}</td>
+						<td>{{ site.fdf___2 }}</td>
+						<td>{{ site.hand_prof___2 }}</td>
+						<td>{{ site.gcp___2 }}</td>
+						<td>{{ site.hsp___2 }}</td>
+						<td>{{ site.training___2 }}</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td>CV</td>
+						<td>DOA</td>
+						<td>License</td>
+						<td>Financial Disclosure</td>
+						<td>Handwriting Profile</td>
+						<td>Good Clinical Practice Training</td>
+						<td>Human Subjects Protection Training</td>
+						<td>Site Related Training</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+					<tr class="data">
+						<td></td>
+						<td>Pharmacist</td>
+						<td></td>
+						<td>{{ site.cv___3 }}</td>
+						<td>{{ site.doa_pi___3 }}</td>
+						<td>{{ site.license___3 }}</td>
+						<td>{{ site.fdf___3 }}</td>
+						<td>{{ site.hand_prof___3 }}</td>
+						<td>{{ site.gcp___3 }}</td>
+						<td>{{ site.hsp___3 }}</td>
+						<td>{{ site.training___3 }}</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+					<tr class="data">
+						<td></td>
+						<td>Site Activated</td>
+						<td>{{ site.start_to_finish_duration }}</td>
+						<td>{{ site.open_date }}</td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
 					</tr>
 				</table>
-			{# </div> #}
+			</div>
 			{% endfor %}
 		</div>
 	</div>

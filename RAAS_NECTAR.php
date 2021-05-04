@@ -60,7 +60,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		
 		return $this->event_ids;
 	}
-
 	public function getDAGs($project_id = false) {
 		if (!isset($this->dags)) {
 		    if(!$project_id) {
@@ -90,7 +89,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		
 		return $this->dags;
 	}
-
 	public function getFieldLabelMapping($fieldName = false) {
 		if(!isset($this->mappings)) {
 			$this->mappings = [];
@@ -115,7 +113,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			return $this->mappings;
 		}
 	}
-
 	public function getUADData($project_id = false) {
 		if (!isset($this->uad_data)) {
 		    if(!$project_id) {
@@ -144,7 +141,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		
 		return $this->uad_data;
 	}
-
 	public function getEDCData($project_id = false) {
 		if (!isset($this->edc_data) || !$this->edc_data) {
             if(!$project_id) {
@@ -179,7 +175,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		
 		return $this->edc_data;
 	}
-
     public function getScreeningData($projectId = false) {
         if(!$this->screening_data) {
             if(!$projectId) {
@@ -197,7 +192,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 
         return $this->screening_data;
     }
-
 	public function getUser() {
 		if (!isset($this->user)) {
 		    $this->user = false;
@@ -528,7 +522,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		return $screening_log_data;
 	}
 	public function getEnrollmentChartData($site = null) {
-		carl_log('site: ' . $site);
 		// determine earliest screened date (upon which weeks array will be based)
 		$enroll_data = $this->getEDCData();
 		$first_date = date("Y-m-d");
@@ -744,10 +737,40 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		
 		return $field_names;
 	}
-	
 	public function getSiteStartupData() {
 		// return array of site objects, each with data used to build Site Activation tables
-		return ['a', 'b', 'c'];
+		$activation_fields = $this->getVCCSiteStartUpFieldList();
+		if (empty($activation_fields)) {
+			throw new \Exception("The RAAS/NECTAR module couldn't retrieve the list of fields in the VCC Site Start Up form (in the regulatory project)");
+		}
+		
+		// add extra field(s) useful for site activation tables
+		$activation_fields[] = 'record_id';
+		
+		$regulatoryPID = $this->getProjectSetting('site_regulation_project');
+		$params = [
+			"project_id" => $regulatoryPID,
+			"return_format" => 'json',
+			"fields" => $activation_fields,
+			"exportAsLabels" => true
+		];
+		$data = json_decode(\REDCap::getData($params));
+		if (empty($data)) {
+			throw new \Exception("Couldn't retrieve site activation data from regulatory project.");
+		}
+		
+		// add extra data useful for site activation tables
+		foreach($data as $index => $site) {
+			$site_start_ts = strtotime($site->site_engaged);
+			$site_open_ts = strtotime($site->open_date);
+			if ($site_start_ts && $site_open_ts) {
+				$site_start_date = new \DateTime(date("Y-m-d", $site_start_ts));
+				$site_open_date = new \DateTime(date("Y-m-d", $site_open_ts));
+				$data[$index]->start_to_finish_duration = $site_open_date->diff($site_start_date)->format("%a") . " days";
+			}
+		}
+		
+		return $data;
 	}
 	
 	// hooks
