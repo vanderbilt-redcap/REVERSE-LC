@@ -482,6 +482,18 @@
 		{# blue bar #}
 		<div class="blue_bar"></div>
 		<div class="row">
+			<div class="dropdown active-site-select">
+				<button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					Select a site
+				</button>
+				<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+					{% for site in siteStartupData %}
+					<a class="dropdown-item" href="#">{{ site.record_id }}</a>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+		<div class="row">
 			{% for site in siteStartupData %}
 			<div class="activation-container">
 				<h2>{{ site.record_id }}</h2>

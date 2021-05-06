@@ -170,6 +170,21 @@ $("document").ready(function() {
 		});
 	});
 	
+	// when a user clicks on a site row in the enrollments table, select that row and update the chart
+	$("body").on("mousedown touchstart", "#activation .active-site-select .dropdown-item", function(clickEvent) {
+		var site_name = $(clickEvent.target).text();
+		var found_site_container;
+		$('.activation-container').each(function(i, div) {
+			if (site_name == $(div).find('h2').text()) {
+				found_site_container = $(div);
+			}
+		});
+		if (found_site_container.length) {
+			$('.activation-container').hide();
+			found_site_container.show();
+		}
+	});
+	
 	$("#links .links").hide();
 	$("#links button.close-folder").hide();
 	
@@ -186,5 +201,6 @@ $("document").ready(function() {
 		}
 	});
 	
-	activateTab('activation');
+	// show first site in activation tab
+	$('.activation-container').first().show();
 });
