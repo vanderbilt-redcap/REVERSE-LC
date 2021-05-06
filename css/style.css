@@ -270,6 +270,24 @@ div.activation-container {
 	text-align: center;
 	vertical-align: middle;
 }
+.activation-tables td.null {
+    background: repeating-linear-gradient(
+		45deg,
+		#EEEEEE,
+		#EEEEEE 10px,
+		#E2E2E2 10px,
+		#E2E2E2 20px
+	);
+}
+.activation-tables tr.data td.null {
+    background: repeating-linear-gradient(
+		45deg,
+		#C4C4C4,
+		#C4C4C4 10px,
+		#BABABA 10px,
+		#BABABA 20px
+	);
+}
 .activation-tables td:first-child {
     background-color: #4B93FF;
 }
