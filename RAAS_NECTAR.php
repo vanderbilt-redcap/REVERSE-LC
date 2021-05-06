@@ -723,7 +723,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		}
 		
 		$reg_dd = json_decode(\REDCap::getDataDictionary($regulatoryPID, 'json'));
-		if (empty($regulatoryPID)) {
+		if (empty($reg_dd)) {
 			throw new \Exception("The RAAS/NECTAR module couldn't get start-up fields -- fatal error trying to decode the Data Dictionary (json) for the regulatory project (PID: " . $regulatoryPID . ")");
 		}
 		

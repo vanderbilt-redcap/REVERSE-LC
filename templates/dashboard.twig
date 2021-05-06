@@ -29,113 +29,59 @@
 	</div>
 	{#<div class='row' style="height:1px"></div>#}
 	<div id="allSitesData" class="row">
-		<div class="col-6">
-			<table class="dashboard">
-				<thead>
-					<tr>
-						<th></th>
-						<th>Enrolled</th>
-						<th>Treated</th>
-						<th>FPE</th>
-						<th>LPE</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr class="first_row">
-						<td>Entire Project</td>
-						<td></td>
-						<td></td>
-						<td></td>
-						<td></td>
-					</tr>
-					{% for totalDetails in allSites["totals"] %}
+		<div class="blue_bar col-12"></div>
+		<div class="row" style="width: 100%;">
+			<div class="col-6">
+				<table class="dashboard">
+					<thead>
 						<tr>
-							<td>{{ totalDetails["name"] }}</td>
-							<td>{{ totalDetails["enrolled"] }}</td>
-							<td>{{ totalDetails["treated"] }}</td>
-							<td>{{ totalDetails["fpe"] }}</td>
-							<td>{{ totalDetails["lpe"] }}</td>
+							<th></th>
+							<th>Enrolled</th>
+							<th>Treated</th>
+							<th>FPE</th>
+							<th>LPE</th>
 						</tr>
-					{% endfor %}
-					<tr class="first_row">
-						<td>By Site</td>
-						<td></td>
-						<td></td>
-						<td></td>
-						<td></td>
-					</tr>
-					{% for siteDetails in allSites["sites"] %}
-						<tr data-dag="{{ siteDetails["dag"] }}">
-							<td>{{ siteDetails["name"] }}</td>
-							<td>{{ siteDetails["enrolled"] }}</td>
-							<td>{{ siteDetails["treated"] }}</td>
-							<td>{{ siteDetails["fpe"] }}</td>
-							<td>{{ siteDetails["lpe"] }}</td>
+					</thead>
+					<tbody>
+						<tr class="first_row">
+							<td>Entire Project</td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
 						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		</div>
-		{# chart #}
-		<div class="col-6">
-			<canvas id="enrollment_chart" width="400" height="400"></canvas>
-			<script>
-				var week_labels = [
-					{% for row in enrollmentChart.rows|slice(0,-1) %}
-						'{{ row.0 }}',
-					{% endfor %}
-				];
-				var data1 = [
-					{% for row in enrollmentChart.rows|slice(0,-1) %}
-						{{ row.1 }},
-					{% endfor %}
-				];
-				var data2 = [
-					{% for row in enrollmentChart.rows|slice(0,-1) %}
-						{{ row.2 }},
-					{% endfor %}
-				];
-				var ctx = document.getElementById('enrollment_chart').getContext('2d');
-				var enrollment_chart = new Chart(ctx, {
-					type: 'bar',
-					data: {
-						labels: week_labels,
-						datasets: [{
-							label: 'Participants Enrolled',
-							data: data1,
-							borderColor: 'rgba(13, 127, 133, 1)',
-							borderWidth: 2,
-							type: 'line',
-							datalabels: {
-								anchor: 'center'
-							}
-						},{
-							label: 'Cumulative Enrollments',
-							data: data2,
-							backgroundColor: 'rgba(180, 199, 231, 1)',
-							borderWidth: 1,
-							datalabels: {
-								offset: 12
-							}
-						}]
-					},
-					options: {
-						title: {
-							display: true,
-							fontSize: 24,
-							fontStyle: 'normal',
-							text: 'Enrollments By Week'
-						},
-						scales: {
-							yAxes: [{
-								ticks: {
-									beginAtZero: true
-								}
-							}]
-						}
-					}
-				});
-			</script>
+						{% for totalDetails in allSites["totals"] %}
+							<tr>
+								<td>{{ totalDetails["name"] }}</td>
+								<td>{{ totalDetails["enrolled"] }}</td>
+								<td>{{ totalDetails["treated"] }}</td>
+								<td>{{ totalDetails["fpe"] }}</td>
+								<td>{{ totalDetails["lpe"] }}</td>
+							</tr>
+						{% endfor %}
+						<tr class="first_row">
+							<td>By Site</td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+						</tr>
+						{% for siteDetails in allSites["sites"] %}
+							<tr data-dag="{{ siteDetails["dag"] }}">
+								<td>{{ siteDetails["name"] }}</td>
+								<td>{{ siteDetails["enrolled"] }}</td>
+								<td>{{ siteDetails["treated"] }}</td>
+								<td>{{ siteDetails["fpe"] }}</td>
+								<td>{{ siteDetails["lpe"] }}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+			{# chart #}
+			<div class="col-6 chart-container" style="position: relative; height: 75vh; width: 50vw">
+				<canvas id="enrollment_chart"></canvas>
+			</div>
 		</div>
 	</div>
 	<div id="mySiteData">
@@ -725,4 +671,66 @@
 		</div>
 	</div>
 </div>
+
+{# enrollment chart js script below: #}
+<script>
+	var week_labels = [
+		{% for row in enrollmentChart.rows|slice(0,-1) %}
+			'{{ row.0 }}',
+		{% endfor %}
+	];
+	var data1 = [
+		{% for row in enrollmentChart.rows|slice(0,-1) %}
+			{{ row.1 }},
+		{% endfor %}
+	];
+	var data2 = [
+		{% for row in enrollmentChart.rows|slice(0,-1) %}
+			{{ row.2 }},
+		{% endfor %}
+	];
+	var ctx = document.getElementById('enrollment_chart').getContext('2d');
+	var enrollment_chart = new Chart(ctx, {
+		type: 'bar',
+		data: {
+			labels: week_labels,
+			datasets: [{
+				label: 'Participants Enrolled',
+				data: data1,
+				borderColor: 'rgba(13, 127, 133, 1)',
+				borderWidth: 2,
+				type: 'line',
+				datalabels: {
+					anchor: 'center'
+				}
+			},{
+				label: 'Cumulative Enrollments',
+				data: data2,
+				backgroundColor: 'rgba(180, 199, 231, 1)',
+				borderWidth: 1,
+				datalabels: {
+					offset: 12
+				}
+			}]
+		},
+		options: {
+			title: {
+				display: true,
+				fontSize: 24,
+				fontStyle: 'normal',
+				text: 'Enrollments By Week'
+			},
+			scales: {
+				yAxes: [{
+					ticks: {
+						beginAtZero: true
+					}
+				}]
+			},
+			responsive: true,
+			responsiveAnimationDuration: 50,
+			maintainAspectRatio: false
+		}
+	});
+</script>
 {% endblock %}
