@@ -254,6 +254,9 @@ div.activation-container {
 	display: none;
 	margin: 24px;
 }
+div.ref_fields {
+	display: none;
+}
 .activation-container h2 {
 	color: #4B93FF;
 	font-weight: bold;
@@ -300,8 +303,11 @@ div.activation-container {
 .activation-tables tr.data td.green {
 	background-color: #01C775;
 }
-.activation-tables tr.data td.orange {
+.activation-tables tr.data td.yellow {
 	background-color: #FCAB3B;
+}
+.activation-tables tr.data td.red {
+	background-color: #E24A61;
 }
 .activation-tables tr:not(.data) td, .activation-tables td:nth-child(2) {
 	color: #727998;

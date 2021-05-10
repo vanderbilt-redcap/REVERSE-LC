@@ -441,8 +441,18 @@
 		</div>
 		<div class="row">
 			{% for site in siteStartupData %}
-			<div class="activation-container">
+			<div data-rid="{{ site.record_id }}" class="activation-container">
 				<h2>{{ site.record_id }}</h2>
+				<div class="ref_fields">
+					<span data-field-name="cv_review_vcc">{{ site.cv_review_vcc }}</span>
+					<span data-field-name="doa_vcc_review">{{ site.doa_vcc_review }}</span>
+					<span data-field-name="license_review_vcc">{{ site.license_review_vcc }}</span>
+					<span data-field-name="fin_dis_review_vcc">{{ site.fin_dis_review_vcc }}</span>
+					<span data-field-name="handwrite_review_vcc">{{ site.handwrite_review_vcc }}</span>
+					<span data-field-name="gcp_review_vcc">{{ site.gcp_review_vcc }}</span>
+					<span data-field-name="citi_review_vcc">{{ site.citi_review_vcc }}</span>
+					<span data-field-name="train_review_vcc">{{ sitetrain_review_vcccv_review_vcc }}</span>
+				</div>
 				<table class="table activation-tables">
 					<tr>
 						<td></td>
@@ -549,7 +559,7 @@
 					<tr>
 						<td></td>
 						<td></td>
-						<td></td>
+						<td class="null"></td>
 						<td>CV</td>
 						<td>DOA</td>
 						<td>License</td>
@@ -566,15 +576,15 @@
 					<tr class="data">
 						<td></td>
 						<td>PI Documents</td>
-						<td></td>
-						<td>{{ site.cv___1 }}</td>
-						<td>{{ site.doa_pi___1 }}</td>
-						<td>{{ site.license___1 }}</td>
-						<td>{{ site.fdf___1 }}</td>
-						<td>{{ site.hand_prof___1 }}</td>
-						<td>{{ site.gcp___1 }}</td>
-						<td>{{ site.hsp___1 }}</td>
-						<td>{{ site.training___1 }}</td>
+						<td class="null"></td>
+						<td data-field="cv_review_vcc">{{ site.cv }}</td>
+						<td data-field="doa_vcc_review">{{ site.doa }}</td>
+						<td data-field="license_review_vcc">{{ site.license }}</td>
+						<td data-field="fin_dis_review_vcc">{{ site.fdf }}</td>
+						<td data-field="handwrite_review_vcc">{{ site.hand_prof }}</td>
+						<td data-field="gcp_review_vcc">{{ site.gcp }}</td>
+						<td data-field="citi_review_vcc">{{ site.hsp }}</td>
+						<td data-field="train_review_vcc">{{ site.training }}</td>
 						<td class="null"></td>
 						<td class="null"></td>
 						<td class="null"></td>
@@ -583,7 +593,7 @@
 					<tr>
 						<td></td>
 						<td></td>
-						<td></td>
+						<td class="null"></td>
 						<td>CV</td>
 						<td>DOA</td>
 						<td>License</td>
@@ -600,15 +610,15 @@
 					<tr class="data">
 						<td></td>
 						<td>Primary Coordinator</td>
-						<td></td>
-						<td>{{ site.cv___2 }}</td>
-						<td>{{ site.doa_pi___2 }}</td>
-						<td>{{ site.license___2 }}</td>
-						<td>{{ site.fdf___2 }}</td>
-						<td>{{ site.hand_prof___2 }}</td>
-						<td>{{ site.gcp___2 }}</td>
-						<td>{{ site.hsp___2 }}</td>
-						<td>{{ site.training___2 }}</td>
+						<td class="null"></td>
+						<td data-field="cv_review_vcc">{{ site.ksp_cv }}</td>
+						<td data-field="doa_vcc_review">{{ site.ksp_doa }}</td>
+						<td data-field="license_review_vcc">{{ site.ksp_license }}</td>
+						<td data-field="fin_dis_review_vcc">{{ site.ksp_fdf }}</td>
+						<td data-field="handwrite_review_vcc">{{ site.ksp_hand_prof }}</td>
+						<td data-field="gcp_review_vcc">{{ site.ksp_gcp }}</td>
+						<td data-field="citi_review_vcc">{{ site.ksp_hsp }}</td>
+						<td data-field="train_review_vcc">{{ site.ksp_training }}</td>
 						<td class="null"></td>
 						<td class="null"></td>
 						<td class="null"></td>
@@ -617,7 +627,7 @@
 					<tr>
 						<td></td>
 						<td></td>
-						<td></td>
+						<td class="null"></td>
 						<td>CV</td>
 						<td>DOA</td>
 						<td>License</td>
@@ -634,15 +644,15 @@
 					<tr class="data">
 						<td></td>
 						<td>Pharmacist</td>
-						<td></td>
-						<td>{{ site.cv___3 }}</td>
-						<td>{{ site.doa_pi___3 }}</td>
-						<td>{{ site.license___3 }}</td>
-						<td>{{ site.fdf___3 }}</td>
-						<td>{{ site.hand_prof___3 }}</td>
-						<td>{{ site.gcp___3 }}</td>
-						<td>{{ site.hsp___3 }}</td>
-						<td>{{ site.training___3 }}</td>
+						<td class="null"></td>
+						<td data-field="cv_review_vcc">{{ site.pharm_cv }}</td>
+						<td data-field="doa_vcc_review">{{ site.pharm_doa }}</td>
+						<td data-field="license_review_vcc">{{ site.pharm_license }}</td>
+						<td data-field="fin_dis_review_vcc">{{ site.pharm_fdf }}</td>
+						<td data-field="handwrite_review_vcc">{{ site.pharm_hand_prof }}</td>
+						<td data-field="gcp_review_vcc">{{ site.pharm_gcp }}</td>
+						<td data-field="citi_review_vcc">{{ site.pharm_hsp }}</td>
+						<td data-field="train_review_vcc">{{ site.pharm_training }}</td>
 						<td class="null"></td>
 						<td class="null"></td>
 						<td class="null"></td>

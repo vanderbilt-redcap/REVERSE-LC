@@ -746,6 +746,14 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		
 		// add extra field(s) useful for site activation tables
 		$activation_fields[] = 'record_id';
+		$activation_fields[] = 'cv_review_vcc';
+		$activation_fields[] = 'doa_vcc_review';
+		$activation_fields[] = 'license_review_vcc';
+		$activation_fields[] = 'fin_dis_review_vcc';
+		$activation_fields[] = 'handwrite_review_vcc';
+		$activation_fields[] = 'gcp_review_vcc';
+		$activation_fields[] = 'citi_review_vcc';
+		$activation_fields[] = 'train_review_vcc';
 		
 		$regulatoryPID = $this->getProjectSetting('site_regulation_project');
 		$params = [

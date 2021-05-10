@@ -71,7 +71,8 @@ function clickedFolder(clickEvent) {
 }
 
 $("document").ready(function() {
-    activateTab("allSitesData");
+    // activateTab("allSitesData");
+    activateTab("activation");
 		
 	// get new Screening Log Report when select#site changes
 	$("select#site").change('change', function() {
@@ -190,14 +191,36 @@ $("document").ready(function() {
 	
 	$('.sortable').tablesorter();
 	
+	// site activation table color coding
 	$("tr.data td:nth-child(n+3)").each(function(i, td) {
 		var cell = $(td);
-		if (cell.text() == "Unchecked") {
-			cell.removeClass('green orange');
-			cell.addClass('orange');
-		} else if (cell.text()) {
-			cell.removeClass('green orange');
-			cell.addClass('green');
+		
+		var text_red = [
+			"Initiated",
+			"Awaiting Site Response"
+		];
+		var text_green = [
+			"Complete",
+			"Confirmed by VCC"
+		];
+		
+		var digit_regex = /\d/;
+		var text = cell.text();
+		console.log('text', text);
+		text = text.trim();
+		if (digit_regex.test(text)) {
+			// probably a date cell or count of days between site engaged/open for enrollment
+			if (text != '') {
+				cell.addClass('green');
+			}
+		} else {
+			if (text_red.includes(text)) {
+				cell.addClass('red');
+			} else if (text_green.includes(text)) {
+				cell.addClass('green');
+			} else {
+				cell.addClass('yellow');
+			}
 		}
 	});
 	
