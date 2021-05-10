@@ -27,11 +27,6 @@
 				"name": "RAAS_NECTAR Dashboard",
 				"icon": "report",
 				"url": "dashboard.php"
-			},
-			{
-				"name": "Activation",
-				"icon": "fas fa-toggle-on",
-				"url" : "activation.php"
 			}
 		],
 		"control-center": []
