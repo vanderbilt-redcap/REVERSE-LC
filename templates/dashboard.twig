@@ -433,14 +433,14 @@
 					Select a site
 				</button>
 				<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-					{% for site in siteStartupData %}
+					{% for site in siteStartupData.sites %}
 					<a class="dropdown-item" href="#">{{ site.record_id }}</a>
 					{% endfor %}
 				</div>
 			</div>
 		</div>
 		<div class="row">
-			{% for site in siteStartupData %}
+			{% for site in siteStartupData.sites %}
 			<div data-rid="{{ site.record_id }}" class="activation-container">
 				<h2>{{ site.record_id }}</h2>
 				<div class="ref_fields">
@@ -577,14 +577,14 @@
 						<td></td>
 						<td>PI Documents</td>
 						<td class="null"></td>
-						<td data-field="cv_review_vcc">{{ site.cv }}</td>
-						<td data-field="doa_vcc_review">{{ site.doa }}</td>
-						<td data-field="license_review_vcc">{{ site.license }}</td>
-						<td data-field="fin_dis_review_vcc">{{ site.fdf }}</td>
-						<td data-field="handwrite_review_vcc">{{ site.hand_prof }}</td>
-						<td data-field="gcp_review_vcc">{{ site.gcp }}</td>
-						<td data-field="citi_review_vcc">{{ site.hsp }}</td>
-						<td data-field="train_review_vcc">{{ site.training }}</td>
+						<td class="{{ site.pi.cv.class }}">{{ site.pi.cv.value }}</td>
+						<td class="{{ site.pi.doa.class }}">{{ site.pi.doa.value }}</td>
+						<td class="{{ site.pi.license.class }}">{{ site.pi.license.value }}</td>
+						<td class="{{ site.pi.fdf.class }}">{{ site.pi.fdf.value }}</td>
+						<td class="{{ site.pi.hand_prof.class }}">{{ site.pi.hand_prof.value }}</td>
+						<td class="{{ site.pi.gcp.class }}">{{ site.pi.gcp.value }}</td>
+						<td class="{{ site.pi.hsp.class }}">{{ site.pi.hsp.value }}</td>
+						<td class="{{ site.pi.training.class }}">{{ site.pi.training.value }}</td>
 						<td class="null"></td>
 						<td class="null"></td>
 						<td class="null"></td>
@@ -611,14 +611,14 @@
 						<td></td>
 						<td>Primary Coordinator</td>
 						<td class="null"></td>
-						<td data-field="cv_review_vcc">{{ site.ksp_cv }}</td>
-						<td data-field="doa_vcc_review">{{ site.ksp_doa }}</td>
-						<td data-field="license_review_vcc">{{ site.ksp_license }}</td>
-						<td data-field="fin_dis_review_vcc">{{ site.ksp_fdf }}</td>
-						<td data-field="handwrite_review_vcc">{{ site.ksp_hand_prof }}</td>
-						<td data-field="gcp_review_vcc">{{ site.ksp_gcp }}</td>
-						<td data-field="citi_review_vcc">{{ site.ksp_hsp }}</td>
-						<td data-field="train_review_vcc">{{ site.ksp_training }}</td>
+						<td class="{{ site.primary_coordinator.cv.class }}">{{ site.primary_coordinator.cv.value }}</td>
+						<td class="{{ site.primary_coordinator.doa.class }}">{{ site.primary_coordinator.doa.value }}</td>
+						<td class="{{ site.primary_coordinator.license.class }}">{{ site.primary_coordinator.license.value }}</td>
+						<td class="{{ site.primary_coordinator.fdf.class }}">{{ site.primary_coordinator.fdf.value }}</td>
+						<td class="{{ site.primary_coordinator.hand_prof.class }}">{{ site.primary_coordinator.hand_prof.value }}</td>
+						<td class="{{ site.primary_coordinator.gcp.class }}">{{ site.primary_coordinator.gcp.value }}</td>
+						<td class="{{ site.primary_coordinator.hsp.class }}">{{ site.primary_coordinator.hsp.value }}</td>
+						<td class="{{ site.primary_coordinator.training.class }}">{{ site.primary_coordinator.training.value }}</td>
 						<td class="null"></td>
 						<td class="null"></td>
 						<td class="null"></td>
@@ -645,14 +645,14 @@
 						<td></td>
 						<td>Pharmacist</td>
 						<td class="null"></td>
-						<td data-field="cv_review_vcc">{{ site.pharm_cv }}</td>
-						<td data-field="doa_vcc_review">{{ site.pharm_doa }}</td>
-						<td data-field="license_review_vcc">{{ site.pharm_license }}</td>
-						<td data-field="fin_dis_review_vcc">{{ site.pharm_fdf }}</td>
-						<td data-field="handwrite_review_vcc">{{ site.pharm_hand_prof }}</td>
-						<td data-field="gcp_review_vcc">{{ site.pharm_gcp }}</td>
-						<td data-field="citi_review_vcc">{{ site.pharm_hsp }}</td>
-						<td data-field="train_review_vcc">{{ site.pharm_training }}</td>
+						<td class="{{ site.pharmacist.cv.class }}">{{ site.pharmacist.cv.value }}</td>
+						<td class="{{ site.pharmacist.doa.class }}">{{ site.pharmacist.doa.value }}</td>
+						<td class="{{ site.pharmacist.license.class }}">{{ site.pharmacist.license.value }}</td>
+						<td class="{{ site.pharmacist.fdf.class }}">{{ site.pharmacist.fdf.value }}</td>
+						<td class="{{ site.pharmacist.hand_prof.class }}">{{ site.pharmacist.hand_prof.value }}</td>
+						<td class="{{ site.pharmacist.gcp.class }}">{{ site.pharmacist.gcp.value }}</td>
+						<td class="{{ site.pharmacist.hsp.class }}">{{ site.pharmacist.hsp.value }}</td>
+						<td class="{{ site.pharmacist.training.class }}">{{ site.pharmacist.training.value }}</td>
 						<td class="null"></td>
 						<td class="null"></td>
 						<td class="null"></td>

@@ -71,8 +71,7 @@ function clickedFolder(clickEvent) {
 }
 
 $("document").ready(function() {
-    // activateTab("allSitesData");
-    activateTab("activation");
+    activateTab("allSitesData");
 		
 	// get new Screening Log Report when select#site changes
 	$("select#site").change('change', function() {
@@ -192,7 +191,7 @@ $("document").ready(function() {
 	$('.sortable').tablesorter();
 	
 	// site activation table color coding
-	$("tr.data td:nth-child(n+3)").each(function(i, td) {
+	$("tr.data td:not(.signoff):nth-child(n+3)").each(function(i, td) {
 		var cell = $(td);
 		
 		var text_red = [

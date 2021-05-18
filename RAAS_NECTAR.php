@@ -33,6 +33,32 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		'randomization',
 		'transfusion_given'
 	];
+	public $personnel_roles = [
+		'PI',
+		'Primary Coordinator',
+		'Pharmacist'
+	];
+	public $document_signoff_fields = [
+		'cv' => 'cv_review_vcc',
+		'doa' => 'doa_vcc_review',
+		'license' => 'license_review_vcc',
+		'fdf' => 'fin_dis_review_vcc',
+		'hand_prof' => 'handwrite_review_vcc',
+		'gcp' => 'gcp_review_vcc',
+		'hsp' => 'citi_review_vcc',
+		'training' => 'train_review_vcc'
+	];
+	public $personnel_form_complete_fields = [
+		'cv_complete',
+		'license_complete',
+		'study_training_complete',
+		'human_subjects_training_complete',
+		'gcp_training_complete',
+		'delegation_of_authority_doa_complete',
+		'financial_disclosure_complete',
+		'iata_training_complete',
+		'handwriting_profile_complete'
+	];
 	
 	private const MAX_FOLDER_NAME_LEN = 60;		// folder names truncated after 48 characters
 
@@ -744,18 +770,21 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			throw new \Exception("The RAAS/NECTAR module couldn't retrieve the list of fields in the VCC Site Start Up form (in the regulatory project)");
 		}
 		
+		$regulatoryPID = $this->getProjectSetting('site_regulation_project');
+		
 		// add extra field(s) useful for site activation tables
 		$activation_fields[] = 'record_id';
-		$activation_fields[] = 'cv_review_vcc';
-		$activation_fields[] = 'doa_vcc_review';
-		$activation_fields[] = 'license_review_vcc';
-		$activation_fields[] = 'fin_dis_review_vcc';
-		$activation_fields[] = 'handwrite_review_vcc';
-		$activation_fields[] = 'gcp_review_vcc';
-		$activation_fields[] = 'citi_review_vcc';
-		$activation_fields[] = 'train_review_vcc';
+		$activation_fields[] = 'role';
 		
-		$regulatoryPID = $this->getProjectSetting('site_regulation_project');
+		// these fields are used for the site activation table cells information/statuses
+		$activation_fields = array_merge($activation_fields, array_values($this->document_signoff_fields));
+		
+		// if stop is true for a record, don't select that record to be the role personnel for any role
+		$activation_fields[] = 'stop';
+		
+		// add form complete fields so we get all instances (even if instances are full of empty field values)
+		$activation_fields = array_merge($activation_fields, $this->personnel_form_complete_fields);
+		
 		$params = [
 			"project_id" => $regulatoryPID,
 			"return_format" => 'json',
@@ -767,18 +796,441 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			throw new \Exception("Couldn't retrieve site activation data from regulatory project.");
 		}
 		
-		// add extra data useful for site activation tables
-		foreach($data as $index => $site) {
+		// separate data entries into sites[] and personnel[]
+		$startup_data = new \stdClass();
+		$startup_data->sites = [];
+		$startup_data->personnel = [];
+		foreach($data as $index => $entry) {
+			if (strpos($entry->redcap_event_name, 'Site Documents') !== false) {
+				$startup_data->sites[] = $entry;
+			} elseif (strpos($entry->redcap_event_name, 'Personnel Documents') !== false) {
+				$startup_data->personnel[] = $entry;
+			}
+		}
+		unset($data);
+		
+		$this->processStartupPersonnelData($startup_data->personnel);
+		$this->processStartupSiteData($startup_data->sites, $startup_data->personnel);
+		
+		return $startup_data;
+	}
+	public function processStartupPersonnelData(&$personnel_data) {
+		foreach($personnel_data as &$data) {
+			foreach($data as $key => $value) {
+				if (empty($value))
+					unset($data->$key);
+			}
+		}
+		
+		// array for complete personnel data objects
+		$personnel = new \stdClass();
+		
+		// filter out older records if multiple exist for a given [role]
+		// throw exception if can't determine a single record for a given role
+		$candidates = [];
+		$reg_pid = $this->getProjectSetting('site_regulation_project');
+		$reg_project_event_table = \REDCap::getLogEventTable($reg_pid);
+		$rid_field = $this->getRecordIdField($reg_pid);
+		foreach($personnel_data as $i => $personnel_record_event) {
+			if (empty($personnel_record_event->redcap_repeat_instrument)) {
+				// [stop] is set if a person leaves the org or is no longer that acts as that role for the study(ies)
+				if (!empty($personnel_record_event->stop)) {
+					continue;
+				}
+				
+				// create candidate objects, we're not sure which personnel record we're going to select to be the person for each role yet
+				// we want to select personnel based on the record's creation date (recent records will get chosen over older records) and their [role] field value
+				// we also want to make sure we select 1 and only 1 person for each role
+				$candidate = new \stdClass();
+				$rid = $personnel_record_event->$rid_field;
+				$candidate->$rid_field = $rid;
+				$candidate->role = $personnel_record_event->role;
+				
+				// try to determine when this record was created
+				$result = $this->query("SELECT ts FROM $reg_project_event_table WHERE project_id = ? AND data_values LIKE ? AND description = 'Create record'",
+					[$reg_pid,
+					"%$rid_field = '$rid'%"]
+				);
+				$result_rows = [];
+				while($row = $result->fetch_assoc()) {
+					$result_rows[] = $row;
+				}
+				if (count($result_rows) > 1) {
+					throw new \Exception("The RAAS/NECTAR module couldn't determine a single timestamp for when this record ($rid) was created!");
+				}
+				if (isset($result_rows[0])) {
+					$candidate->create_ts = $result_rows[0]['ts'];
+				}
+				$candidates[] = $candidate;
+			}
+		}
+		
+		// now that we have creation timestamps and role info, select our personnel records (filter out others)
+		foreach($this->personnel_roles as $i => $role) {
+			$max_ts = 0;
+			$count_role = 0;
+			$selected_candidate = null;
+			foreach($candidates as $j => $candidate) {
+				if ($candidate->role == $role) {
+					$count_role++;
+					if (isset($candidate->create_ts)) {
+						if ($candidate->create_ts > $max_ts) {
+							$selected_candidate = $candidate;
+						}
+						$max_ts = max($candidate->create_ts, $max_ts);
+					} elseif ($selected_candidate == null) {
+						$selected_candidate = $candidate;
+					}
+				}
+			}
+			
+			if ($max_ts == 0 and $count_role > 1) {
+				// none of our personnel records have creation timestamps and there are more than one... so which one do we use? we can't determine
+				throw new \Exception("The RAAS/NECTAR module couldn't determine which personnel record to use for role '$role' (most likely there are multiple personnel records with this role and the module can't determine when each were created)");
+			}
+			
+			if (empty($selected_candidate)) {
+				throw new \Exception("The RAAS/NECTAR module couldn't determine which personnel record to use for role '$role' -- most likely there are no records created with this [role] value.");
+			}
+			
+			$role_name = strtolower(preg_replace('/[ ]+/', '_', $role));
+			$personnel->$role_name = $selected_candidate;
+		}
+		
+		// use all record-events in personnel data to fill in field info for candidates (matching on record id)
+		foreach($personnel as $role => &$data) {
+			$latest_instances = new \stdClass();	// holds max instance id found for repeating instances (we want to ignore older instances)
+			
+			// loop over instance info to record max instance id for each personnel form
+			foreach($personnel_data as $i => $record_data) {
+				if ($record_data->$rid_field == $data->$rid_field && isset($record_data->redcap_repeat_instrument)) {
+					$form_name = $record_data->redcap_repeat_instrument;
+					if (!isset($latest_instances->$form_name)) {
+						$latest_instances->$form_name = $record_data->redcap_repeat_instance;
+					} else {
+						$latest_instances->$form_name = max($record_data->redcap_repeat_instance, $latest_instances->$form_name);
+					}
+				}
+			}
+			
+			foreach($personnel_data as $i => $record_data) {
+				if (
+					// if it's the latest repeated instance for this form, or not a repeated form, and the record_id matches this personnel: copy properties
+					((isset($latest_instances->{$record_data->redcap_repeat_instrument})
+					&&
+					$latest_instances->{$record_data->redcap_repeat_instrument} == $record_data->redcap_repeat_instance)
+					||
+					!isset($record_data->redcap_repeat_instrument))
+					&&
+					$record_data->$rid_field == $data->$rid_field
+				) {
+					foreach($record_data as $key => $value) {
+						$data->$key = $value;
+					}
+				}
+			}
+		}
+		
+		$personnel_data = $personnel;
+	}
+	public function processStartupSiteData(&$sites, $personnel) {
+		foreach($sites as &$site) {
+			foreach($site as $key => $value) {
+				if (empty($value))
+					unset($site->$key);
+			}
+		}
+		
+		$reg_pid = $this->getProjectSetting('site_regulation_project');
+		$reg_project = new \Project($reg_pid);
+		$personnel_event_id = array_key_first($reg_project->events[2]['events']);
+		$todays_date = new \DateTime(date("Y-m-d", time()));
+		
+		// calculate study admin cell values and classes
+		foreach($sites as &$site) {
+			foreach($this->personnel_roles as $role_name) {
+				$role = str_replace(' ', '_', strtolower($role_name));
+				$site->$role = [];
+				$cells = &$site->$role;
+				if (empty($personnel->$role)) {
+					throw new \Exception ("The RAAS/NECTAR module couldn't determine which record to use for $role_name role information.");
+				}
+				
+				foreach($this->document_signoff_fields as $data_field => $check_field) {
+					// cbox value stored with suffix in personnel->role
+					$check_field_prop = $check_field . "___1";
+					
+					// append prefixes where needed
+					if ($role == 'primary_coordinator') {
+						$db_data_field = 'ksp_' . $data_field;
+					} elseif ($role == 'pharmacist') {
+						$db_data_field = 'pharm_' . $data_field;
+					} else {
+						$db_data_field = $data_field;
+					}
+					
+					$cells[$data_field] = [];
+					$cells[$data_field]['value'] = $site->$db_data_field;
+					if (empty($site->$db_data_field)) {
+						$cells[$data_field]['class'] = 'signoff';
+					} elseif ($site->$db_data_field == "Confirmed by VCC") {
+						if ($personnel->$role->$check_field_prop == 'Checked') {
+							// get most recent sign-off date (from most recent instance)
+							$max_instance = $this->getMaxInstance($reg_pid, $personnel->$role->record_id, $personnel_event_id, $check_field);
+							$history = $this->getDataHistoryLog($reg_pid, $personnel->$role->record_id, $personnel_event_id, $check_field, $max_instance);
+							if (!empty($history)) {
+								$cells[$data_field]['last_changed'] = substr(array_key_first($history), 0, -2);	// chop off last two digits -- timestamp was previously multiplied by 100
+								$checked_date = new \DateTime(date("Y-m-d", $cells[$data_field]['last_changed']));
+								$cells[$data_field]['value'] = $cells[$data_field]['value'] . " (" . $todays_date->diff($checked_date)->format("%a") . " days)";
+								
+								$cells[$data_field]['class'] = 'signoff green';
+							} else {
+								$cells[$data_field]['class'] = 'signoff red';
+							}
+						} else {
+							$cells[$data_field]['class'] = 'signoff red';
+						}
+					} elseif ($site->$db_data_field == 'Initiated') {
+						$cells[$data_field]['class'] = 'signoff red';
+					} else {
+						$cells[$data_field]['class'] = 'signoff yellow';
+					}
+				}
+			}
+		}
+		
+		// add count of days between site engaged and site open for enrollment
+		foreach($sites as $index => $site) {
 			$site_start_ts = strtotime($site->site_engaged);
 			$site_open_ts = strtotime($site->open_date);
 			if ($site_start_ts && $site_open_ts) {
 				$site_start_date = new \DateTime(date("Y-m-d", $site_start_ts));
 				$site_open_date = new \DateTime(date("Y-m-d", $site_open_ts));
-				$data[$index]->start_to_finish_duration = $site_open_date->diff($site_start_date)->format("%a") . " days";
+				$sites[$index]->start_to_finish_duration = $site_open_date->diff($site_start_date)->format("%a") . " days";
+			}
+		}
+	}
+	public function getDataHistoryLog($project_id, $record, $event_id, $field_name) {
+		// copied closely from \Form::getDataHistoryLog but allows dev to provide $project_id to target other projects
+		
+		global $lang;
+		
+		$maxInstance = $this->getMaxInstance($project_id, $record, $event_id, $field_name);
+		$instance = $maxInstance;
+		
+		$GLOBALS['Proj'] = $Proj = new \Project($project_id);
+		$longitudinal = $Proj->longitudinal;
+		$missingDataCodes = parseEnum($Proj->project['missing_data_codes']);
+		
+		// Set field values
+		$field_type = $Proj->metadata[$field_name]['element_type'];
+        $field_val_type = $Proj->metadata[$field_name]['element_validation_type'];
+
+		// Version history enabled
+        $version_history_enabled = ($field_type == 'file' && $field_val_type != 'signature' && \Files::fileUploadVersionHistoryEnabledProject($project_id));
+
+		// Determine if a multiple choice field (do not include checkboxes because we'll used their native logging format for display)
+		$isMC = ($Proj->isMultipleChoice($field_name) && $field_type != 'checkbox');
+		if ($isMC) {
+			$field_choices = parseEnum($Proj->metadata[$field_name]['element_enum']);
+		}
+		
+		$hasFieldViewingRights = true;
+		
+		// Format the field_name with escaped underscores for the query
+		$field_name_q = str_replace("_", "\\_", $field_name);
+		
+		// REPEATING FORMS/EVENTS: Check for "instance" number if the form is set to repeat
+		$instanceSql = "";
+		$isRepeatingFormOrEvent = $Proj->isRepeatingFormOrEvent($event_id, $Proj->metadata[$field_name]['form_name']);
+		if ($isRepeatingFormOrEvent) {
+			// Set $instance
+			$instance = is_numeric($instance) ? (int)$instance : 1;
+			if ($instance > 1) {
+				$instanceSql = "and data_values like '[instance = $instance]%'";
+			} else {
+				$instanceSql = "and data_values not like '[instance = %'";
 			}
 		}
 		
-		return $data;
+		// Default
+		$time_value_array = array();
+		$arm = isset($Proj->eventInfo[$event_id]) ? $Proj->eventInfo[$event_id]['arm_num'] : getArm();
+
+		// Retrieve history and parse field data values to obtain value for specific field
+		$sql = "SELECT user, timestamp(ts) as ts, data_values, description, change_reason, event 
+                FROM ".\Logging::getLogEventTable($project_id)." WHERE project_id = " . $project_id . " and pk = '" . db_escape($record) . "'
+				and (
+				(
+					(event_id = $event_id " . ($longitudinal ? "" : "or event_id is null") . ")
+					and legacy = 0 $instanceSql
+					and
+					(
+						(
+							event in ('INSERT', 'UPDATE')
+							and description in ('Create record', 'Update record', 'Update record (import)',
+								'Create record (import)', 'Merge records', 'Update record (API)', 'Create record (API)',
+								'Update record (DTS)', 'Update record (DDP)', 'Erase survey responses and start survey over',
+								'Update survey response', 'Create survey response', 'Update record (Auto calculation)',
+								'Update survey response (Auto calculation)', 'Delete all record data for single form',
+								'Delete all record data for single event', 'Update record (API) (Auto calculation)')
+							and (data_values like '%\\n{$field_name_q} = %' or data_values like '{$field_name_q} = %' 
+								or data_values like '%\\n{$field_name_q}(%) = %' or data_values like '{$field_name_q}(%) = %')
+						)
+						or
+						(event = 'DOC_DELETE' and data_values = '$field_name')
+						or
+						(event = 'DOC_UPLOAD' and (data_values like '%\\n{$field_name_q} = %' or data_values like '{$field_name_q} = %' 
+													or data_values like '%\\n{$field_name_q}(%) = %' or data_values like '{$field_name_q}(%) = %'))
+					)
+				)
+				or 
+				(event = 'DELETE' and description like 'Delete record%' and (event_id is null or event_id in (".prep_implode(array_keys($Proj->events[$arm]['events'])).")))
+				)
+				order by log_event_id";
+		$q = db_query($sql);
+		// Loop through each row from log_event table. Each will become a row in the new table displayed.
+        $version_num = 0;
+        $this_version_num = "";
+        $rows = array();
+        $deleted_doc_ids = array();
+        while ($row = db_fetch_assoc($q))
+        {
+            $rows[] = $row;
+            // For File Version History for file upload fields, get doc_id all any that were deleted
+            if ($version_history_enabled) {
+                $value = html_entity_decode($row['data_values'], ENT_QUOTES);
+                foreach (explode(",\n", $value) as $this_piece) {
+                    $doc_id = \Form::dataHistoryMatchLogString($field_name, $field_type, $this_piece);
+                    if (is_numeric($doc_id)) {
+                        $doc_delete_time = Files::wasEdocDeleted($doc_id);
+                        if ($doc_delete_time) {
+                            $deleted_doc_ids[$doc_id] = $doc_delete_time;
+                        }
+                    }
+                }
+            }
+        }
+        // Loop through all rows
+		foreach ($rows as $row)
+		{
+			// If the record was deleted in the past, then remove all activity before that point
+			if ($row['event'] == 'DELETE') {
+				$time_value_array = array();
+                $version_num = 0;
+				continue;
+			}
+			// Flag to denote if found match in this row
+			$matchedThisRow = false;
+			// Get timestamp
+			$ts = $row['ts'];
+			// Get username
+			$user = $row['user'];
+			// Decode values
+			$value = html_entity_decode($row['data_values'], ENT_QUOTES);
+            // Default return string
+            $this_value = "";
+            // Split each field into lines/array elements.
+            // Loop to find the string match
+            foreach (explode(",\n", $value) as $this_piece)
+            {
+                $isMissingCode = false;
+                // Does this line match the logging format?
+                $matched = \Form::dataHistoryMatchLogString($field_name, $field_type, $this_piece);
+                if ($matched !== false || ($field_type == "file" && ($this_piece == $field_name || strpos($this_piece, "$field_name = ") === 0)))
+                {
+                    // Set flag that match was found
+                    $matchedThisRow = true;
+                    // File Upload fields
+                    if ($field_type == "file")
+                    {
+						if (isset($missingDataCodes[$matched])) {
+							// Set text
+							$this_value = $matched;
+							$doc_id = null;
+							$this_version_num = "";
+							$isMissingCode = true;
+						} elseif ($matched === false || $matched == '') {
+                            // For File Version History, don't show separate rows for deleted files
+                            if ($version_history_enabled) continue 2;
+                            // Deleted
+                            $doc_id = null;
+                            $this_version_num = "";
+                            // Set text
+                            $this_value = \RCView::span(array('style'=>'color:#A00000;'), $lang['docs_72']);
+                        } elseif (is_numeric($matched)) {
+                            // Uploaded
+                            $doc_id = $matched;
+                            $doc_name = \Files::getEdocName($doc_id);
+                            $version_num++;
+                            $this_version_num = $version_num;
+                            // Set text
+                            $this_value = \RCView::span(array('style'=>'color:green;'),
+                                            $lang['data_import_tool_20']
+                                            ). " - \"{$doc_name}\"";
+                        }
+                        break;
+                    }
+                    // Stop looping once we have the value (except for checkboxes)
+                    elseif ($field_type != "checkbox")
+                    {
+                        $this_value = $matched;
+                        break;
+                    }
+                    // Checkboxes may have multiple values, so append onto each other if another match occurs
+                    else
+                    {
+                        $this_value .= $matched . "<br>";
+                    }
+                }
+            }
+
+            // If a multiple choice question, give label AND coding
+            if ($isMC && $this_value != "")
+            {
+                if (isset($missingDataCodes[$this_value])) {
+					$this_value = decode_filter_tags($missingDataCodes[$this_value]) . " ($this_value)";
+                } else {
+					$this_value = decode_filter_tags($field_choices[$this_value]) . " ($this_value)";
+				}
+            }
+
+			// Add to array (if match was found in this row)
+			if ($matchedThisRow) {			
+				// If user does not have privileges to view field's form, redact data
+				if (!$hasFieldViewingRights) {
+					$this_value = "<code>".$lang['dataqueries_304']."</code>";
+				} elseif ($field_type != "file") {
+					$this_value = nl2br(htmlspecialchars(br2nl(label_decode($this_value)), ENT_QUOTES));
+				}
+				// Set array key as timestamp + extra digits for padding for simultaneous events
+				$key = strtotime($ts)*100;
+				// Ensure that we don't overwrite existing logged events
+				while (isset($time_value_array[$key.""])) $key++;
+				// Display missing data code?
+				$returningMissingCode = (isset($missingDataCodes[$this_value]) && !\Form::hasActionTag("@NOMISSING", $Proj->metadata[$field_name]['misc']));
+				// Add to array
+				$time_value_array[$key.""] = array( 'ts'=>$ts, 'value'=>$this_value, 'user'=>$user, 'change_reason'=>nl2br($row['change_reason']),
+                                                    'doc_version'=>$this_version_num, 'doc_id'=>(isset($doc_id) ? $doc_id : null),
+                                                    'doc_deleted'=>(isset($doc_id) && isset($deleted_doc_ids[$doc_id]) ? $deleted_doc_ids[$doc_id] : ""),
+                                                    'missing_data_code'=>($returningMissingCode ? $this_value : ''));
+			}
+		}
+		// Sort by timestamp
+		ksort($time_value_array);
+		// Return data history log
+		return $time_value_array;
+	}
+	public function getMaxInstance($project_id, $record, $event_id, $field_name) {
+		$q = $this->createQuery();
+		$q->add("SELECT MAX(instance) FROM redcap_data WHERE project_id = ? AND record = ? AND event_id = ? AND field_name = ?", [
+			$project_id,
+			$record,
+			$event_id,
+			$field_name
+		]);
+		$result = $q->execute();
+		return $result->fetch_assoc()['MAX(instance)'];
 	}
 	
 	// hooks
