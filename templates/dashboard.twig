@@ -442,7 +442,7 @@
 		<div class="row">
 			{% for site in siteStartupData.sites %}
 			<div data-rid="{{ site.record_id }}" class="activation-container">
-				<h2>{{ site.record_id }}</h2>
+				<h2>{{ site.site_number }} - {{ site.record_id }}</h2>
 				<p>Vanguard: <b>{{ site.selected_vanguard }}</b>&nbsp;&nbsp;&nbsp;&nbsp;Biomarker: <b>{{ site.site_selected_biomarker }}</b></p>
 				<div class="ref_fields">
 					<span data-field-name="cv_review_vcc">{{ site.cv_review_vcc }}</span>

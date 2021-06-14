@@ -775,6 +775,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		// add extra field(s) useful for site activation tables
 		$activation_fields[] = 'record_id';
 		$activation_fields[] = 'role';
+		$activation_fields[] = 'site_number';
 		
 		// these fields are used for the site activation table cells information/statuses
 		$activation_fields = array_merge($activation_fields, array_values($this->document_signoff_fields));
