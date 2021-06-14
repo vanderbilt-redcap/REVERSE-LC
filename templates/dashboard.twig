@@ -434,7 +434,7 @@
 				</button>
 				<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
 					{% for site in siteStartupData.sites %}
-					<a class="dropdown-item" href="#">{{ site.record_id }}</a>
+					<a class="dropdown-item" href="#">{{ site.site_number }} - {{ site.record_id }}</a>
 					{% endfor %}
 				</div>
 			</div>

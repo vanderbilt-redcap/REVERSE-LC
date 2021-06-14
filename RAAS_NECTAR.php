@@ -991,7 +991,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 						} else {
 							$cells[$data_field]['class'] = 'signoff red';
 						}
-					} elseif ($site->$db_data_field == 'Initiated') {
+					} elseif ($site->$db_data_field == 'Initiated' || $site->$db_data_field == 'Awaiting Site Response') {
 						$cells[$data_field]['class'] = 'signoff red';
 					} else {
 						$cells[$data_field]['class'] = 'signoff yellow';
