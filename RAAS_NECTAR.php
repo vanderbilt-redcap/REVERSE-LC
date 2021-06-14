@@ -398,8 +398,8 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		$data->totals = json_decode('[
 			{
 				"name": "Target",
-				"enrolled": 1000,
-				"treated": 1000,
+				"enrolled": 1600,
+				"treated": 1600,
 				"fpe": "-",
 				"lpe": "-"
 			},
