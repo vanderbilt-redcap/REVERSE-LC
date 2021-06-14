@@ -1007,7 +1007,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			if ($site_start_ts && $site_open_ts) {
 				$site_start_date = new \DateTime(date("Y-m-d", $site_start_ts));
 				$site_open_date = new \DateTime(date("Y-m-d", $site_open_ts));
-				$sites[$index]->start_to_finish_duration = $site_open_date->diff($site_start_date)->format("%a") . " days";
+				$sites[$index]->start_to_finish_duration = $site_open_date->diff($site_start_date)->format("%a") . " days to site activation";
 			}
 		}
 	}
