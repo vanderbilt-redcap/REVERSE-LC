@@ -443,6 +443,7 @@
 			{% for site in siteStartupData.sites %}
 			<div data-rid="{{ site.record_id }}" class="activation-container">
 				<h2>{{ site.record_id }}</h2>
+				<p>Vanguard: <b>{{ site.selected_vanguard }}</b>&nbsp;&nbsp;&nbsp;&nbsp;Biomarker: <b>{{ site.site_selected_biomarker }}</b></p>
 				<div class="ref_fields">
 					<span data-field-name="cv_review_vcc">{{ site.cv_review_vcc }}</span>
 					<span data-field-name="doa_vcc_review">{{ site.doa_vcc_review }}</span>
@@ -456,7 +457,7 @@
 				<table class="table activation-tables">
 					<tr>
 						<td></td>
-						<td><p>Vanguard: {{ site.selected_vanguard }} Biomarker: {{ site.site_selected_biomarker }}</p></td>
+						<td></td>
 						<td>Site Status for Category</td>
 						<td>sIRB Survey Sent</td>
 						<td>sIRB Survey Received</td>

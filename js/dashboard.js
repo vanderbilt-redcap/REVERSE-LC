@@ -170,7 +170,7 @@ $("document").ready(function() {
 		});
 	});
 	
-	// when a user clicks on a site row in the enrollments table, select that row and update the chart
+	// when a user clicks on a site option in the Site Activation tab dropdown, select that site and update the Site Activation chart
 	$("body").on("mousedown touchstart", "#activation .active-site-select .dropdown-item", function(clickEvent) {
 		var site_name = $(clickEvent.target).text();
 		var found_site_container;
