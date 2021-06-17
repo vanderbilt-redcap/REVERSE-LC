@@ -970,6 +970,10 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 						$db_data_field = $data_field;
 					}
 					
+					if ($data_field == 'doa' and $role == 'pi') {
+						$db_data_field = 'pi_ksp_doa';
+					}
+					
 					$cells[$data_field] = [];
 					$cells[$data_field]['value'] = $site->$db_data_field;
 					if (empty($site->$db_data_field)) {
