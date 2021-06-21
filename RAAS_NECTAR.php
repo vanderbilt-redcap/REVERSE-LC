@@ -970,8 +970,14 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 						$db_data_field = $data_field;
 					}
 					
-					if ($data_field == 'doa' and $role == 'pi') {
-						$db_data_field = 'doa_pi';
+					if ($data_field == 'doa') {
+						if ($role == "pi") {
+							$db_data_field = 'doa_pi';
+						} elseif ($role == "primary_coordinator") {
+							$db_data_field = 'pi_ksp_doa';
+						} elseif ($role == "pharmacist") {
+							$db_data_field = 'pharm_doa_pi';
+						}
 					}
 					
 					$cells[$data_field] = [];
