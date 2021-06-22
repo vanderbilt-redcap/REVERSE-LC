@@ -256,11 +256,11 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				user can see my site data -- including all patient rows from all sites
 		*/
 		$this->getUser();
-
-		// if ($this->user === true || empty($this->user->dashboard)) {
-			$this->user->authorized = true;
+		
+		if ($this->user === true || empty($this->user->dashboard)) {
+			$this->user->authorized = false;
 			return;
-		// }
+		}
 		
 		if (!empty($access_level = $this->access_tier_by_role[$this->user->role_ext_2])) {
 			$this->user->authorized = $access_level;
