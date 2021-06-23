@@ -745,12 +745,12 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 	public function getVCCSiteStartUpFieldList() {
 		$regulatoryPID = $this->getProjectSetting('site_regulation_project');
 		if (empty($regulatoryPID)) {
-			throw new \Exception("The RAAS/NECTAR module couldn't get start-up fields because the 'RAAS_NECTAR Site Regulation Project ID' setting is not configured. Please configure the module by selecting a regulatory project.");
+			// throw new \Exception("The RAAS/NECTAR module couldn't get start-up fields because the 'RAAS_NECTAR Site Regulation Project ID' setting is not configured. Please configure the module by selecting a regulatory project.");
 		}
 		
 		$reg_dd = json_decode(\REDCap::getDataDictionary($regulatoryPID, 'json'));
 		if (empty($reg_dd)) {
-			throw new \Exception("The RAAS/NECTAR module couldn't get start-up fields -- fatal error trying to decode the Data Dictionary (json) for the regulatory project (PID: " . $regulatoryPID . ")");
+			// throw new \Exception("The RAAS/NECTAR module couldn't get start-up fields -- fatal error trying to decode the Data Dictionary (json) for the regulatory project (PID: " . $regulatoryPID . ")");
 		}
 		
 		$field_names = [];
@@ -767,7 +767,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		// return array of site objects, each with data used to build Site Activation tables
 		$activation_fields = $this->getVCCSiteStartUpFieldList();
 		if (empty($activation_fields)) {
-			throw new \Exception("The RAAS/NECTAR module couldn't retrieve the list of fields in the VCC Site Start Up form (in the regulatory project)");
+			// throw new \Exception("The RAAS/NECTAR module couldn't retrieve the list of fields in the VCC Site Start Up form (in the regulatory project)");
 		}
 		
 		$regulatoryPID = $this->getProjectSetting('site_regulation_project');
@@ -793,9 +793,9 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			"exportAsLabels" => true
 		];
 		$data = json_decode(\REDCap::getData($params));
-		if (empty($data)) {
-			throw new \Exception("Couldn't retrieve site activation data from regulatory project.");
-		}
+		// if (empty($data)) {
+			// throw new \Exception("Couldn't retrieve site activation data from regulatory project.");
+		// }
 		
 		// separate data entries into sites[] and personnel[]
 		$startup_data = new \stdClass();
@@ -857,7 +857,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 					$result_rows[] = $row;
 				}
 				if (count($result_rows) > 1) {
-					throw new \Exception("The RAAS/NECTAR module couldn't determine a single timestamp for when this record ($rid) was created!");
+					// throw new \Exception("The RAAS/NECTAR module couldn't determine a single timestamp for when this record ($rid) was created!");
 				}
 				if (isset($result_rows[0])) {
 					$candidate->create_ts = $result_rows[0]['ts'];
@@ -887,11 +887,11 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			
 			if ($max_ts == 0 and $count_role > 1) {
 				// none of our personnel records have creation timestamps and there are more than one... so which one do we use? we can't determine
-				throw new \Exception("The RAAS/NECTAR module couldn't determine which personnel record to use for role '$role' (most likely there are multiple personnel records with this role and the module can't determine when each were created)");
+				// throw new \Exception("The RAAS/NECTAR module couldn't determine which personnel record to use for role '$role' (most likely there are multiple personnel records with this role and the module can't determine when each were created)");
 			}
 			
 			if (empty($selected_candidate)) {
-				throw new \Exception("The RAAS/NECTAR module couldn't determine which personnel record to use for role '$role' -- most likely there are no records created with this [role] value.");
+				// throw new \Exception("The RAAS/NECTAR module couldn't determine which personnel record to use for role '$role' -- most likely there are no records created with this [role] value.");
 			}
 			
 			$role_name = strtolower(preg_replace('/[ ]+/', '_', $role));
@@ -954,7 +954,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$site->$role = [];
 				$cells = &$site->$role;
 				if (empty($personnel->$role)) {
-					throw new \Exception ("The RAAS/NECTAR module couldn't determine which record to use for $role_name role information.");
+					// throw new \Exception ("The RAAS/NECTAR module couldn't determine which record to use for $role_name role information.");
 				}
 				
 				foreach($this->document_signoff_fields as $data_field => $check_field) {
