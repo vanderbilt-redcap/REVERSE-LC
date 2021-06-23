@@ -60,7 +60,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		'handwriting_profile_complete'
 	];
 	
-	private const MAX_FOLDER_NAME_LEN = 60;		// folder names truncated after 48 characters
+	private const MAX_FOLDER_NAME_LEN = 60;		// folder names truncated after n characters
 
 	public function __construct() {
 		parent::__construct();
@@ -745,12 +745,12 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 	public function getVCCSiteStartUpFieldList() {
 		$regulatoryPID = $this->getProjectSetting('site_regulation_project');
 		if (empty($regulatoryPID)) {
-			// throw new \Exception("The RAAS/NECTAR module couldn't get start-up fields because the 'RAAS_NECTAR Site Regulation Project ID' setting is not configured. Please configure the module by selecting a regulatory project.");
+			$this->addStartupError("The RAAS/NECTAR module couldn't get start-up fields because the 'RAAS_NECTAR Site Regulation Project ID' setting is not configured. Please configure the module by selecting a regulatory project.", "danger");
 		}
 		
 		$reg_dd = json_decode(\REDCap::getDataDictionary($regulatoryPID, 'json'));
 		if (empty($reg_dd)) {
-			// throw new \Exception("The RAAS/NECTAR module couldn't get start-up fields -- fatal error trying to decode the Data Dictionary (json) for the regulatory project (PID: " . $regulatoryPID . ")");
+			$this->addStartupError("The RAAS/NECTAR module couldn't get start-up fields -- fatal error trying to decode the Data Dictionary (json) for the regulatory project (PID: " . $regulatoryPID . ")", "danger");
 		}
 		
 		$field_names = [];
@@ -764,10 +764,13 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		return $field_names;
 	}
 	public function getSiteStartupData() {
+		// initialize array to collect any startup errors that may occur
+		$this->startup_errors = [];
+		
 		// return array of site objects, each with data used to build Site Activation tables
 		$activation_fields = $this->getVCCSiteStartUpFieldList();
 		if (empty($activation_fields)) {
-			// throw new \Exception("The RAAS/NECTAR module couldn't retrieve the list of fields in the VCC Site Start Up form (in the regulatory project)");
+			$this->addStartupError("The RAAS/NECTAR module couldn't retrieve the list of fields in the VCC Site Start Up form (in the regulatory project)", "danger");
 		}
 		
 		$regulatoryPID = $this->getProjectSetting('site_regulation_project');
@@ -793,9 +796,9 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			"exportAsLabels" => true
 		];
 		$data = json_decode(\REDCap::getData($params));
-		// if (empty($data)) {
-			// throw new \Exception("Couldn't retrieve site activation data from regulatory project.");
-		// }
+		if (empty($data)) {
+			$this->addStartupError("Couldn't retrieve site activation data from regulatory project.", "danger");
+		}
 		
 		// separate data entries into sites[] and personnel[]
 		$startup_data = new \stdClass();
@@ -812,6 +815,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		
 		$this->processStartupPersonnelData($startup_data->personnel);
 		$this->processStartupSiteData($startup_data->sites, $startup_data->personnel);
+		$startup_data->errors = $this->startup_errors;
 		
 		return $startup_data;
 	}
@@ -857,7 +861,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 					$result_rows[] = $row;
 				}
 				if (count($result_rows) > 1) {
-					// throw new \Exception("The RAAS/NECTAR module couldn't determine a single timestamp for when this record ($rid) was created!");
+					$this->addStartupError("The RAAS/NECTAR module couldn't determine a timestamp for when this record ($rid) was created.", "warning");
 				}
 				if (isset($result_rows[0])) {
 					$candidate->create_ts = $result_rows[0]['ts'];
@@ -887,11 +891,11 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			
 			if ($max_ts == 0 and $count_role > 1) {
 				// none of our personnel records have creation timestamps and there are more than one... so which one do we use? we can't determine
-				// throw new \Exception("The RAAS/NECTAR module couldn't determine which personnel record to use for role '$role' (most likely there are multiple personnel records with this role and the module can't determine when each were created)");
+				$this->addStartupError("The RAAS/NECTAR module couldn't determine which personnel record to use for role '$role' (most likely there are multiple personnel records with this role and the module can't determine when each were created)", "danger");
 			}
 			
 			if (empty($selected_candidate)) {
-				// throw new \Exception("The RAAS/NECTAR module couldn't determine which personnel record to use for role '$role' -- most likely there are no records created with this [role] value.");
+				$this->addStartupError("The RAAS/NECTAR module couldn't determine which personnel record to use for role '$role' -- most likely there are no records created with this [role] value.", "danger");
 			}
 			
 			$role_name = strtolower(preg_replace('/[ ]+/', '_', $role));
@@ -954,7 +958,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$site->$role = [];
 				$cells = &$site->$role;
 				if (empty($personnel->$role)) {
-					// throw new \Exception ("The RAAS/NECTAR module couldn't determine which record to use for $role_name role information.");
+					$this->addStartupError("The RAAS/NECTAR module couldn't determine which record to use for $role_name role information.", "danger");
 				}
 				
 				foreach($this->document_signoff_fields as $data_field => $check_field) {
@@ -1242,6 +1246,23 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		]);
 		$result = $q->execute();
 		return $result->fetch_assoc()['MAX(instance)'];
+	}
+	public function addStartupError($error_message, $error_class) {
+		if (gettype($this->startup_errors) !== 'array') {
+			throw new \Exception("Tried to add a startup error without initializing startup_errors array. It's likely that a call to `addStartupError` is out of place.");
+		}
+		
+		// don't add duplicates
+		foreach($this->startup_errors as $error) {
+			if ($error['text'] == $error_message) {
+				return;
+			}
+		}
+		
+		$this->startup_errors[] = [
+			"text" => $error_message,
+			"class" => $error_class
+		];
 	}
 	
 	// hooks
