@@ -742,12 +742,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 	}
 	
 	// RAAS additions
-	public function getVCCSiteStartUpFieldList() {
-		$regulatoryPID = $this->getProjectSetting('site_regulation_project');
-		if (empty($regulatoryPID)) {
-			$this->addStartupError("The RAAS/NECTAR module couldn't get start-up fields because the 'RAAS_NECTAR Site Regulation Project ID' setting is not configured. Please configure the module by selecting a regulatory project.", "danger");
-		}
-		
+	public function getVCCSiteStartUpFieldList($regulatoryPID) {
 		$reg_dd = json_decode(\REDCap::getDataDictionary($regulatoryPID, 'json'));
 		if (empty($reg_dd)) {
 			$this->addStartupError("The RAAS/NECTAR module couldn't get start-up fields -- fatal error trying to decode the Data Dictionary (json) for the regulatory project (PID: " . $regulatoryPID . ")", "danger");
@@ -764,16 +759,24 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		return $field_names;
 	}
 	public function getSiteStartupData() {
+		$startup_data = new \stdClass();
+		
 		// initialize array to collect any startup errors that may occur
 		$this->startup_errors = [];
+		$startup_data->dags = [];
+		
+		// get regulatory Project instance (for groups/DAGs data)
+		$regulatoryPID = $this->getProjectSetting('site_regulation_project');
+		if (empty($regulatoryPID)) {
+			$this->addStartupError("The RAAS/NECTAR module couldn't find a project ID for a corresponding regulatory project because the 'RAAS_NECTAR Site Regulation Project ID' setting is not configured. Please configure the module by selecting a regulatory project.", "danger");
+			return $startup_data;
+		}
 		
 		// return array of site objects, each with data used to build Site Activation tables
-		$activation_fields = $this->getVCCSiteStartUpFieldList();
+		$activation_fields = $this->getVCCSiteStartUpFieldList($regulatoryPID);
 		if (empty($activation_fields)) {
 			$this->addStartupError("The RAAS/NECTAR module couldn't retrieve the list of fields in the VCC Site Start Up form (in the regulatory project)", "danger");
 		}
-		
-		$regulatoryPID = $this->getProjectSetting('site_regulation_project');
 		
 		// add extra field(s) useful for site activation tables
 		$activation_fields[] = 'record_id';
@@ -793,7 +796,8 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			"project_id" => $regulatoryPID,
 			"return_format" => 'json',
 			"fields" => $activation_fields,
-			"exportAsLabels" => true
+			"exportAsLabels" => true,
+			"exportDataAccessGroups" => true
 		];
 		$data = json_decode(\REDCap::getData($params));
 		if (empty($data)) {
@@ -801,25 +805,28 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		}
 		
 		// separate data entries into sites[] and personnel[]
-		$startup_data = new \stdClass();
 		$startup_data->sites = [];
 		$startup_data->personnel = [];
 		foreach($data as $index => $entry) {
 			if (strpos($entry->redcap_event_name, 'Site Documents') !== false) {
 				$startup_data->sites[] = $entry;
+				$dag = $entry->redcap_data_access_group;
+				if (array_search($dag, $startup_data->dags, true) === false && !empty($dag)) {
+					$startup_data->dags[] = $dag;
+				}
 			} elseif (strpos($entry->redcap_event_name, 'Personnel Documents') !== false) {
 				$startup_data->personnel[] = $entry;
 			}
 		}
 		unset($data);
 		
-		$this->processStartupPersonnelData($startup_data->personnel);
+		$this->processStartupPersonnelData($startup_data->personnel, $startup_data->dags);
 		$this->processStartupSiteData($startup_data->sites, $startup_data->personnel);
 		$startup_data->errors = $this->startup_errors;
 		
 		return $startup_data;
 	}
-	public function processStartupPersonnelData(&$personnel_data) {
+	public function processStartupPersonnelData(&$personnel_data, $dags) {
 		foreach($personnel_data as &$data) {
 			foreach($data as $key => $value) {
 				if (empty($value))
@@ -829,13 +836,13 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		
 		// array for complete personnel data objects
 		$personnel = new \stdClass();
+		$reg_pid = $this->getProjectSetting('site_regulation_project');
+		$reg_project_event_table = \REDCap::getLogEventTable($reg_pid);
+		$rid_field = $this->getRecordIdField($reg_pid);
 		
 		// filter out older records if multiple exist for a given [role]
 		// throw exception if can't determine a single record for a given role
 		$candidates = [];
-		$reg_pid = $this->getProjectSetting('site_regulation_project');
-		$reg_project_event_table = \REDCap::getLogEventTable($reg_pid);
-		$rid_field = $this->getRecordIdField($reg_pid);
 		foreach($personnel_data as $i => $personnel_record_event) {
 			if (empty($personnel_record_event->redcap_repeat_instrument)) {
 				// [stop] is set if a person leaves the org or is no longer that acts as that role for the study(ies)
@@ -845,7 +852,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				
 				// create candidate objects, we're not sure which personnel record we're going to select to be the person for each role yet
 				// we want to select personnel based on the record's creation date (recent records will get chosen over older records) and their [role] field value
-				// we also want to make sure we select 1 and only 1 person for each role
+				// we also want to make sure we select 1 and only 1 person for each role PER SITE (there is a 1:1 site:DAG correlation)
 				$candidate = new \stdClass();
 				$rid = $personnel_record_event->$rid_field;
 				$candidate->$rid_field = $rid;

@@ -5,9 +5,12 @@
 	"griderj",
 	"tregongs",
 	"orozcodz",
-	"reedcw1"
+	"reedcw1",
+	"site_admin"
 ]);
 $data = $module->getSiteStartupData();
+
 echo "<pre>";
-print_r($data->personnel);
+// print_r($data->personnel);
+print_r($data->dags);
 echo "</pre>";
