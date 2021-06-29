@@ -849,6 +849,10 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				if (!empty($personnel_record_event->stop)) {
 					continue;
 				}
+				// skip if no dag/site defined
+				if (empty($personnel_record_event->redcap_data_access_group)) {
+					continue;
+				}
 				
 				// create candidate objects, we're not sure which personnel record we're going to select to be the person for each role yet
 				// we want to select personnel based on the record's creation date (recent records will get chosen over older records) and their [role] field value
@@ -857,6 +861,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$rid = $personnel_record_event->$rid_field;
 				$candidate->$rid_field = $rid;
 				$candidate->role = $personnel_record_event->role;
+				$candidate->dag = $personnel_record_event->redcap_data_access_group;
 				
 				// try to determine when this record was created
 				$result = $this->query("SELECT ts FROM $reg_project_event_table WHERE project_id = ? AND data_values LIKE ? AND description = 'Create record'",
@@ -868,7 +873,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 					$result_rows[] = $row;
 				}
 				if (count($result_rows) > 1) {
-					$this->addStartupError("The RAAS/NECTAR module couldn't determine a timestamp for when this record ($rid) was created.", "warning");
+					$this->addStartupError("The RAAS/NECTAR module couldn't determine a timestamp for when this record ($rid) was created.", "warning", $candidate->dag);
 				}
 				if (isset($result_rows[0])) {
 					$candidate->create_ts = $result_rows[0]['ts'];
@@ -877,67 +882,72 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			}
 		}
 		
-		// now that we have creation timestamps and role info, select our personnel records (filter out others)
-		foreach($this->personnel_roles as $i => $role) {
-			$max_ts = 0;
-			$count_role = 0;
-			$selected_candidate = null;
-			foreach($candidates as $j => $candidate) {
-				if ($candidate->role == $role) {
-					$count_role++;
-					if (isset($candidate->create_ts)) {
-						if ($candidate->create_ts > $max_ts) {
+		// now that we have creation timestamps and role info, select our personnel records for each site (filter out others)
+		foreach($dags as $dag) {
+			foreach($this->personnel_roles as $i => $role) {
+				$max_ts = 0;
+				$count_role = 0;
+				$selected_candidate = null;
+				foreach($candidates as $j => $candidate) {
+					if ($candidate->role == $role && $candidate->dag == $dag) {
+						$count_role++;
+						if (isset($candidate->create_ts)) {
+							if ($candidate->create_ts > $max_ts) {
+								$selected_candidate = $candidate;
+							}
+							$max_ts = max($candidate->create_ts, $max_ts);
+						} elseif ($selected_candidate == null) {
 							$selected_candidate = $candidate;
 						}
-						$max_ts = max($candidate->create_ts, $max_ts);
-					} elseif ($selected_candidate == null) {
-						$selected_candidate = $candidate;
 					}
 				}
+				
+				if ($max_ts == 0 and $count_role > 1) {
+					// none of our personnel records have creation timestamps and there are more than one... so which one do we use? we can't determine
+					$this->addStartupError("The RAAS/NECTAR module couldn't determine which personnel record to use for role '$role' (most likely there are multiple personnel records with this role and the module can't determine when each were created)", "danger", $dag);
+				}
+				
+				if (empty($selected_candidate)) {
+					$this->addStartupError("The RAAS/NECTAR module couldn't determine which personnel record to use for role '$role' for site '$dag' -- most likely there are no records created with this [role] value assigned to DAG '$dag'.", "danger", $dag);
+				}
+				
+				$role_name = strtolower(preg_replace('/[ ]+/', '_', $role));
+				if (!$personnel->$dag) {
+					$personnel->$dag = new \stdClass();
+				}
+				$personnel->$dag->$role_name = $selected_candidate;
 			}
 			
-			if ($max_ts == 0 and $count_role > 1) {
-				// none of our personnel records have creation timestamps and there are more than one... so which one do we use? we can't determine
-				$this->addStartupError("The RAAS/NECTAR module couldn't determine which personnel record to use for role '$role' (most likely there are multiple personnel records with this role and the module can't determine when each were created)", "danger");
-			}
-			
-			if (empty($selected_candidate)) {
-				$this->addStartupError("The RAAS/NECTAR module couldn't determine which personnel record to use for role '$role' -- most likely there are no records created with this [role] value.", "danger");
-			}
-			
-			$role_name = strtolower(preg_replace('/[ ]+/', '_', $role));
-			$personnel->$role_name = $selected_candidate;
-		}
-		
-		// use all record-events in personnel data to fill in field info for candidates (matching on record id)
-		foreach($personnel as $role => &$data) {
-			$latest_instances = new \stdClass();	// holds max instance id found for repeating instances (we want to ignore older instances)
-			
-			// loop over instance info to record max instance id for each personnel form
-			foreach($personnel_data as $i => $record_data) {
-				if ($record_data->$rid_field == $data->$rid_field && isset($record_data->redcap_repeat_instrument)) {
-					$form_name = $record_data->redcap_repeat_instrument;
-					if (!isset($latest_instances->$form_name)) {
-						$latest_instances->$form_name = $record_data->redcap_repeat_instance;
-					} else {
-						$latest_instances->$form_name = max($record_data->redcap_repeat_instance, $latest_instances->$form_name);
+			// use all record-events in personnel data to fill in field info for candidates (matching on record id)
+			foreach($personnel->$dag as $role => &$data) {
+				$latest_instances = new \stdClass();	// holds max instance id found for repeating instances (we want to ignore older instances)
+				
+				// loop over instance info to record max instance id for each personnel form
+				foreach($personnel_data as $i => $record_data) {
+					if ($record_data->$rid_field == $data->$rid_field && isset($record_data->redcap_repeat_instrument)) {
+						$form_name = $record_data->redcap_repeat_instrument;
+						if (!isset($latest_instances->$form_name)) {
+							$latest_instances->$form_name = $record_data->redcap_repeat_instance;
+						} else {
+							$latest_instances->$form_name = max($record_data->redcap_repeat_instance, $latest_instances->$form_name);
+						}
 					}
 				}
-			}
-			
-			foreach($personnel_data as $i => $record_data) {
-				if (
-					// if it's the latest repeated instance for this form, or not a repeated form, and the record_id matches this personnel: copy properties
-					((isset($latest_instances->{$record_data->redcap_repeat_instrument})
-					&&
-					$latest_instances->{$record_data->redcap_repeat_instrument} == $record_data->redcap_repeat_instance)
-					||
-					!isset($record_data->redcap_repeat_instrument))
-					&&
-					$record_data->$rid_field == $data->$rid_field
-				) {
-					foreach($record_data as $key => $value) {
-						$data->$key = $value;
+				
+				foreach($personnel_data as $i => $record_data) {
+					if (
+						// if it's the latest repeated instance for this form, or not a repeated form, and the record_id matches this personnel: copy properties
+						((isset($latest_instances->{$record_data->redcap_repeat_instrument})
+						&&
+						$latest_instances->{$record_data->redcap_repeat_instrument} == $record_data->redcap_repeat_instance)
+						||
+						!isset($record_data->redcap_repeat_instrument))
+						&&
+						$record_data->$rid_field == $data->$rid_field
+					) {
+						foreach($record_data as $key => $value) {
+							$data->$key = $value;
+						}
 					}
 				}
 			}
@@ -960,16 +970,17 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		
 		// calculate study admin cell values and classes
 		foreach($sites as &$site) {
+			$dag = $site->redcap_data_access_group;
 			foreach($this->personnel_roles as $role_name) {
 				$role = str_replace(' ', '_', strtolower($role_name));
 				$site->$role = [];
 				$cells = &$site->$role;
-				if (empty($personnel->$role)) {
-					$this->addStartupError("The RAAS/NECTAR module couldn't determine which record to use for $role_name role information.", "danger");
+				if (empty($personnel->$dag) || empty($personnel->$dag->$role)) {
+					$this->addStartupError("The RAAS/NECTAR module couldn't determine which record to use for $role_name role information for this site.", "danger", $dag);
 				}
 				
 				foreach($this->document_signoff_fields as $data_field => $check_field) {
-					// cbox value stored with suffix in personnel->role
+					// cbox value stored with suffix in personnel->dag->role
 					$check_field_prop = $check_field . "___1";
 					
 					// append prefixes where needed
@@ -996,10 +1007,10 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 					if (empty($site->$db_data_field)) {
 						$cells[$data_field]['class'] = 'signoff';
 					} elseif ($site->$db_data_field == "Confirmed by VCC") {
-						if ($personnel->$role->$check_field_prop == 'Checked') {
+						if ($personnel->$dag->$role->$check_field_prop == 'Checked') {
 							// get most recent sign-off date (from most recent instance)
-							$max_instance = $this->getMaxInstance($reg_pid, $personnel->$role->record_id, $personnel_event_id, $check_field);
-							$history = $this->getDataHistoryLog($reg_pid, $personnel->$role->record_id, $personnel_event_id, $check_field, $max_instance);
+							$max_instance = $this->getMaxInstance($reg_pid, $personnel->$dag->$role->record_id, $personnel_event_id, $check_field);
+							$history = $this->getDataHistoryLog($reg_pid, $personnel->$dag->$role->record_id, $personnel_event_id, $check_field, $max_instance);
 							if (!empty($history)) {
 								$cells[$data_field]['last_changed'] = substr(array_key_first($history), 0, -2);	// chop off last two digits -- timestamp was previously multiplied by 100
 								$checked_date = new \DateTime(date("Y-m-d", $cells[$data_field]['last_changed']));
@@ -1254,7 +1265,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		$result = $q->execute();
 		return $result->fetch_assoc()['MAX(instance)'];
 	}
-	public function addStartupError($error_message, $error_class) {
+	public function addStartupError($error_message, $error_class, $dag=null) {
 		if (gettype($this->startup_errors) !== 'array') {
 			throw new \Exception("Tried to add a startup error without initializing startup_errors array. It's likely that a call to `addStartupError` is out of place.");
 		}
@@ -1268,7 +1279,8 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		
 		$this->startup_errors[] = [
 			"text" => $error_message,
-			"class" => $error_class
+			"class" => $error_class,
+			"dag" => $dag
 		];
 	}
 	

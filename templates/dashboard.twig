@@ -428,9 +428,11 @@
 		{# blue bar #}
 		<div class="blue_bar"></div>
 		{% for error in siteStartupData.errors %}
-			<div class="alert alert-{{ error.class }}" role="alert">
-				{{ error.text }}
-			</div>
+			{% if not error.dag %}
+				<div id="errors_without_dag" class="alert alert-{{ error.class }}" role="alert">
+					{{ error.text }}
+				</div>
+			{% endif %}
 		{% endfor %}
 		<div class="row">
 			<div class="dropdown active-site-select">
@@ -447,6 +449,13 @@
 		<div class="row">
 			{% for site in siteStartupData.sites %}
 			<div data-rid="{{ site.record_id }}" class="activation-container">
+				{% for error in siteStartupData.errors %}
+					{% if error.dag == site.redcap_data_access_group %}
+						<div class="alert alert-{{ error.class }}" role="alert">
+							{{ error.text }}
+						</div>
+					{% endif %}
+				{% endfor %}
 				<h2>{{ site.site_number }} - {{ site.record_id }}</h2>
 				<p>Vanguard: <b>{{ site.selected_vanguard }}</b>&nbsp;&nbsp;&nbsp;&nbsp;Biomarker: <b>{{ site.site_selected_biomarker }}</b></p>
 				<div class="ref_fields">

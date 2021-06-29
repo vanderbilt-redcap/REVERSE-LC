@@ -139,7 +139,6 @@ $("document").ready(function() {
 		
 		// if empty, fetch total enrollments, otherwise get site specific enrollment data
 		var site_dag = site_row.attr('data-dag') || "";
-		console.log('site_dag', site_dag);
 		
 		$.ajax({
 			url: ENROLLMENT_CHART_DATA_AJAX_URL,
@@ -149,7 +148,6 @@ $("document").ready(function() {
 			dataType: "json"
 		})
 		.done(function(json) {
-			console.log('received json: ', json);
 			if (json.rows && json.rows.length > 1) {
 				// update enrollment chart with new data
 				json.rows.pop()
@@ -171,6 +169,7 @@ $("document").ready(function() {
 	});
 	
 	// when a user clicks on a site option in the Site Activation tab dropdown, select that site and update the Site Activation chart
+	// also hide errors that have no associated dag
 	$("body").on("mousedown touchstart", "#activation .active-site-select .dropdown-item", function(clickEvent) {
 		var site_name = $(clickEvent.target).text();
 		var found_site_container;
@@ -183,6 +182,8 @@ $("document").ready(function() {
 			$('.activation-container').hide();
 			found_site_container.show();
 		}
+		
+		$("#errors_without_dag").hide();
 	});
 	
 	$("#links .links").hide();
@@ -205,7 +206,6 @@ $("document").ready(function() {
 		
 		var digit_regex = /\d/;
 		var text = cell.text();
-		console.log('text', text);
 		text = text.trim();
 		if (digit_regex.test(text)) {
 			// probably a date cell or count of days between site engaged/open for enrollment
@@ -224,5 +224,5 @@ $("document").ready(function() {
 	});
 	
 	// show first site in activation tab
-	$('.activation-container').first().show();
+	// $('.activation-container').first().show();
 });

@@ -11,6 +11,8 @@
 $data = $module->getSiteStartupData();
 
 echo "<pre>";
+print_r($data->errors);
 // print_r($data->personnel);
-print_r($data->dags);
+// print_r($data->sites);
+// print_r($data->dags);
 echo "</pre>";
