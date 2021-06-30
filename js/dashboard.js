@@ -183,7 +183,7 @@ $("document").ready(function() {
 			found_site_container.show();
 		}
 		
-		$("#errors_without_dag").hide();
+		$(".errors_without_dag").hide();
 	});
 	
 	$("#links .links").hide();

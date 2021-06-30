@@ -429,7 +429,7 @@
 		<div class="blue_bar"></div>
 		{% for error in siteStartupData.errors %}
 			{% if not error.dag %}
-				<div id="errors_without_dag" class="alert alert-{{ error.class }}" role="alert">
+				<div class="errors_without_dag alert alert-{{ error.class }}" role="alert">
 					{{ error.text }}
 				</div>
 			{% endif %}
