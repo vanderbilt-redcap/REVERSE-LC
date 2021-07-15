@@ -36,7 +36,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 	public $personnel_roles = [
 		'PI',
 		'Primary Coordinator',
-		'Pharmacist'
+		'Primary dispensing pharmacist'
 	];
 	public $document_signoff_fields = [
 		'cv' => 'cv_review_vcc',
@@ -826,6 +826,87 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		
 		return $startup_data;
 	}
+	public function calculateSiteProgress($siteStartupData) {
+	    $siteCompletionData = [];
+	    $areasOfProgress = [
+	        [
+	            "title" => "Site IREX Agreements",
+                "fields" => [
+					"vcc_survey_sent",
+					"vcc_survey_received",
+					"vcc_survey_accepted",
+					"vcc_survey_accepted",
+					"vcc_pt2_received",
+					"vcc_pt2_reviewed",
+					"vcc_pt2_approved",
+					"institutional_profile_complete",
+					"hrp_agreement",
+					"pi_survey",
+					"site_add_ready",
+					"site_add"
+                ]
+            ],
+            [
+                "title" => "Site Contract",
+                "fields" => [
+					"template_sent",
+					"contract_pe",
+					"contract_fe"
+                ]
+            ],
+            [
+                "title" => "Site Reg Documents",
+                "fields" => [
+                    "ctom_site_docs_approve",
+					"doc_1572",
+					"ib_ack",
+					"lab_docs",
+					"psp_signed",
+					"sirb_approved",
+					"site_info_confirm",
+					"ua_received",
+                ]
+            ],
+            [
+                "title" => "Site KSP Docs",
+                "fields" => [
+                    "pi.cv.value",
+					"pi.doa.value",
+					"pi.license.value",
+					"pi.fdf.value",
+					"pi.hand_prof.value",
+					"pi.gcp.value",
+					"pi.hsp.value",
+					"pi.training.value",
+                    "primary_coordinator.cv.value",
+					"primary_coordinator.doa.value",
+					"primary_coordinator.license.value",
+					"primary_coordinator.fdf.value",
+					"primary_coordinator.hand_prof.value",
+					"primary_coordinator.gcp.value",
+					"primary_coordinator.hsp.value",
+					"primary_coordinator.training.value",
+                    "primary_dispensing_pharmacist.cv.value",
+					"primary_dispensing_pharmacist.doa.value",
+					"primary_dispensing_pharmacist.license.value",
+					"primary_dispensing_pharmacist.gcp.value",
+					"primary_dispensing_pharmacist.hsp.value",
+					"primary_dispensing_pharmacist.training.value",
+                ]
+            ],
+            [
+                "title" => "Site Activated",
+                "fields" => [
+
+					"start_to_finish_duration",
+					"open_date",
+                ]
+            ]
+        ];
+	    foreach($siteStartupData->sites as $thisSite) {
+//	        foreach()
+        }
+    }
 	public function processStartupPersonnelData(&$personnel_data, $dags) {
 		foreach($personnel_data as &$data) {
 			foreach($data as $key => $value) {
@@ -976,7 +1057,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$site->$role = [];
 				$cells = &$site->$role;
 				if (empty($personnel->$dag) || empty($personnel->$dag->$role)) {
-					$this->addStartupError("The RAAS/NECTAR module couldn't determine which record to use for $role_name role information for this site.", "danger", $dag);
+                    $this->addStartupError("The RAAS/NECTAR module couldn't determine which record to use for $role_name role information for this site.", "danger", $dag);
 				}
 				
 				foreach($this->document_signoff_fields as $data_field => $check_field) {
@@ -986,7 +1067,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 					// append prefixes where needed
 					if ($role == 'primary_coordinator') {
 						$db_data_field = 'ksp_' . $data_field;
-					} elseif ($role == 'pharmacist') {
+					} elseif ($role == 'primary_dispensing_pharmacist') {
 						$db_data_field = 'pharm_' . $data_field;
 					} else {
 						$db_data_field = $data_field;
@@ -997,7 +1078,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 							$db_data_field = 'doa_pi';
 						} elseif ($role == "primary_coordinator") {
 							$db_data_field = 'pi_ksp_doa';
-						} elseif ($role == "pharmacist") {
+						} elseif ($role == "primary_dispensing_pharmacist") {
 							$db_data_field = 'pharm_doa_pi';
 						}
 					}
