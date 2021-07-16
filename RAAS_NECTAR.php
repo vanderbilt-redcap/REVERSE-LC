@@ -827,34 +827,43 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		return $startup_data;
 	}
 	public function calculateSiteProgress($siteStartupData) {
+	    ## Don't return data unless user authorized
+	    if($this->user->authorized !== '3') {
+	        return false;
+        }
+
 	    $siteCompletionData = [];
+	    ## IREX is special because completed steps show as dates, not ("Confirmed" || "Not Applicable")
 	    $areasOfProgress = [
-	        [
-	            "title" => "Site IREX Agreements",
-                "fields" => [
-					"vcc_survey_sent",
-					"vcc_survey_received",
-					"vcc_survey_accepted",
-					"vcc_survey_accepted",
-					"vcc_pt2_received",
-					"vcc_pt2_reviewed",
-					"vcc_pt2_approved",
-					"institutional_profile_complete",
-					"hrp_agreement",
-					"pi_survey",
-					"site_add_ready",
-					"site_add"
-                ]
-            ],
             [
+                "any_value" => true,
                 "title" => "Site Contract",
                 "fields" => [
-					"template_sent",
-					"contract_pe",
-					"contract_fe"
+                    "template_sent",
+                    "contract_pe",
+                    "contract_fe"
                 ]
             ],
             [
+                "any_value" => true,
+                "title" => "Site IREX Agreements",
+                "fields" => [
+                    "vcc_survey_sent",
+                    "vcc_survey_received",
+                    "vcc_survey_accepted",
+                    "vcc_survey_accepted",
+                    "vcc_pt2_received",
+                    "vcc_pt2_reviewed",
+                    "vcc_pt2_approved",
+                    "institutional_profile_complete",
+                    "hrp_agreement",
+                    "pi_survey",
+                    "site_add_ready",
+                    "site_add"
+                ]
+            ],
+            [
+                "any_value" => false,
                 "title" => "Site Reg Documents",
                 "fields" => [
                     "ctom_site_docs_approve",
@@ -868,6 +877,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
                 ]
             ],
             [
+                "any_value" => false,
                 "title" => "Site KSP Docs",
                 "fields" => [
                     "pi.cv.value",
@@ -893,19 +903,64 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 					"primary_dispensing_pharmacist.hsp.value",
 					"primary_dispensing_pharmacist.training.value",
                 ]
-            ],
-            [
-                "title" => "Site Activated",
-                "fields" => [
-
-					"start_to_finish_duration",
-					"open_date",
-                ]
             ]
         ];
-	    foreach($siteStartupData->sites as $thisSite) {
-//	        foreach()
+
+	    ## DEACTIVATED
+//        [
+//            "any_value" => false,
+//            "title" => "Site Activated",
+//            "fields" => [
+//
+//                "start_to_finish_duration",
+//                "open_date",
+//            ]
+//        ]
+
+	    $completedValues = [
+	        "confirmed by vcc",
+            "not applicable"
+        ];
+	    
+	    foreach($siteStartupData->sites as $siteIndex => $thisSite) {
+            foreach($areasOfProgress as $thisArea) {
+                $completeTasks = 0;
+                $totalCount = count($thisArea["fields"]);
+                foreach($thisArea["fields"] as $thisKey) {
+                    $subFields = explode(".",$thisKey);
+                    $value = $thisSite;
+                    foreach($subFields as $subIndex => $thisField) {
+                        if($subIndex > 0) {
+                            $value = $value[$thisField];
+                        }
+                        else {
+                            $value = $value->$thisField;
+                        }
+                    }
+
+                    if($thisArea["any_value"]) {
+                        if(!empty($value)) {
+                            $completeTasks++;
+                        }
+                    }
+                    else {
+                        foreach ($completedValues as $matchingValue) {
+                            if (substr(strtolower($value), 0, strlen($matchingValue)) == $matchingValue) {
+                                $completeTasks++;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                $siteCompletionData[$thisSite->redcap_data_access_group][$thisArea["title"]] = [
+                    "total" => $totalCount,
+                    "complete" => $completeTasks,
+                    "percent" => round($completeTasks / $totalCount * 100)
+                ];
+            }
         }
+        return $siteCompletionData;
     }
 	public function processStartupPersonnelData(&$personnel_data, $dags) {
 		foreach($personnel_data as &$data) {

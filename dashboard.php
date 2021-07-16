@@ -31,6 +31,7 @@ $clipboardImageSource = $module->getUrl("images/clipboard.PNG");
 $folderImageSource = $module->getUrl("images/folder.png");
 $helpfulLinks = $module->getHelpfulLinks();
 $helpfulLinkFolders = $module->getHelpfulLinkFolders();
+$siteCompletionData = $module->calculateSiteProgress($siteStartupData);
 
 echo $template->render([
 	"allSites" => $allSitesData,
@@ -45,5 +46,6 @@ echo $template->render([
 	"helpfulLinkFolders" => $helpfulLinkFolders,
 	"clipboardImageSource" => $clipboardImageSource,
 	"folderImageSource" => $folderImageSource,
-	"siteStartupData" => $siteStartupData
+	"siteStartupData" => $siteStartupData,
+    "siteCompletionData" => $siteCompletionData
 ]);
