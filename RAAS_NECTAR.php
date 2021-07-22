@@ -826,10 +826,10 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		$startup_data->personnel = [];
 		foreach($data as $index => $entry) {
 			if (strpos($entry->redcap_event_name, 'Site Documents') !== false) {
-			    if($this->getUser()->authorization !== 3) {
+			    if($this->user->authorized != "3") {
 			        foreach($this->filteredSiteFields as $filteredField) {
 			            ## Replace all date values with "Complete" if no permission to view dates
-			            if($entry->$filteredField != "Not Applicable" && !empty($entry->$filteredField)) {
+			            if(strtolower($entry->$filteredField) != "not applicable" && !empty($entry->$filteredField)) {
 			                $entry->$filteredField = "Complete";
                         }
                     }
