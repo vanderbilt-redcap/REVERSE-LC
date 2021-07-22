@@ -59,6 +59,23 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		'iata_training_complete',
 		'handwriting_profile_complete'
 	];
+	public $filteredSiteFields = [
+        "template_sent",
+        "contract_pe",
+        "contract_fe",
+        "vcc_survey_sent",
+        "vcc_survey_received",
+        "vcc_survey_accepted",
+        "vcc_survey_accepted",
+        "vcc_pt2_received",
+        "vcc_pt2_reviewed",
+        "vcc_pt2_approved",
+        "institutional_profile_complete",
+        "hrp_agreement",
+        "pi_survey",
+        "site_add_ready",
+        "site_add"
+    ];
 	
 	private const MAX_FOLDER_NAME_LEN = 60;		// folder names truncated after n characters
 
@@ -809,6 +826,15 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		$startup_data->personnel = [];
 		foreach($data as $index => $entry) {
 			if (strpos($entry->redcap_event_name, 'Site Documents') !== false) {
+			    if($this->getUser()->authorization !== 3) {
+			        foreach($this->filteredSiteFields as $filteredField) {
+			            ## Replace all date values with "Complete" if no permission to view dates
+			            if($entry[$filteredField] != "Not Applicable" && !empty($entry[$filteredField])) {
+			                $entry[$filteredField] = "Complete";
+                        }
+                    }
+                }
+
 				$startup_data->sites[] = $entry;
 				$dag = $entry->redcap_data_access_group;
 				if (array_search($dag, $startup_data->dags, true) === false && !empty($dag)) {
