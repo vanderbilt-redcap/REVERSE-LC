@@ -829,8 +829,8 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			    if($this->getUser()->authorization !== 3) {
 			        foreach($this->filteredSiteFields as $filteredField) {
 			            ## Replace all date values with "Complete" if no permission to view dates
-			            if($entry[$filteredField] != "Not Applicable" && !empty($entry[$filteredField])) {
-			                $entry[$filteredField] = "Complete";
+			            if($entry->$filteredField != "Not Applicable" && !empty($entry->$filteredField)) {
+			                $entry->$filteredField = "Complete";
                         }
                     }
                 }
