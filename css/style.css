@@ -45,8 +45,9 @@
     border-right: none;
 }
 
-table.dashboard {
-	width: calc(100% - 16px);
+div.has_enrollment_table {
+	overflow: scroll;
+	max-height: 72vh;
 }
 .dashboard th {
     background-color:#055877;

@@ -31,7 +31,7 @@
 	<div id="allSitesData" class="row">
 		<div class="blue_bar col-12"></div>
 		<div class="row" style="width: 100%;">
-			<div class="col-6">
+			<div class="col-6 has_enrollment_table">
 				<table class="dashboard">
 					<thead>
 						<tr>
@@ -40,11 +40,19 @@
 							<th>Treated</th>
 							<th>FPE</th>
 							<th>LPE</th>
+							<th>Screened</th>
+							<th>Eligible</th>
+							<th>Randomized</th>
+							<th>Treated</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr class="first_row">
 							<td>Entire Project</td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
 							<td></td>
 							<td></td>
 							<td></td>
@@ -57,10 +65,18 @@
 								<td>{{ totalDetails["treated"] }}</td>
 								<td>{{ totalDetails["fpe"] }}</td>
 								<td>{{ totalDetails["lpe"] }}</td>
+								<td>{{ totalDetails["screened"] }}</td>
+								<td>{{ totalDetails["eligible"] }}</td>
+								<td>{{ totalDetails["randomized"] }}</td>
+								<td>{{ totalDetails["treated2"] }}</td>
 							</tr>
 						{% endfor %}
 						<tr class="first_row">
 							<td>By Site</td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
 							<td></td>
 							<td></td>
 							<td></td>
@@ -73,13 +89,17 @@
 								<td>{{ siteDetails["treated"] }}</td>
 								<td>{{ siteDetails["fpe"] }}</td>
 								<td>{{ siteDetails["lpe"] }}</td>
+								<td>{{ siteDetails["screened"] }}</td>
+								<td>{{ siteDetails["eligible"] }}</td>
+								<td>{{ siteDetails["randomized"] }}</td>
+								<td>{{ siteDetails["treated2"] }}</td>
 							</tr>
 						{% endfor %}
 					</tbody>
 				</table>
 			</div>
 			{# chart #}
-			<div class="col-6 chart-container" style="position: relative; height: 75vh; width: 50vw">
+			<div class="col-6 chart-container" style="position: relative; height: 72vh; width: 50vw">
 				<canvas id="enrollment_chart"></canvas>
 			</div>
 		</div>

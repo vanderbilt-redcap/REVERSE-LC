@@ -22,7 +22,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		'1030' => '1'		//	Other
 	];
 	public $record_fields = [
-		'record_id',
+		'screening_id',
 		'redcap_data_access_group',
         'dag',
         'dag_name',
@@ -31,7 +31,16 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		'transfusion_datetime',
 		'randomization_date',
 		'randomization',
-		'transfusion_given'
+		'transfusion_given',
+		'append_d_calc',
+		'append_e_calc',
+		'randomization_arm',
+		'sda_a1d1',
+		'sda_a1d2',
+		'sda_a1d3',
+		'sda_a1d4',
+		'sda_a1d5',
+		'sda_a3d1'
 	];
 	public $personnel_roles = [
 		'PI',
@@ -81,7 +90,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 
 	public function __construct() {
 		parent::__construct();
-
 		define("CSS_PATH_1",$this->getUrl("css/style.css"));
 		define("CSS_MAIN_ACTIVE", $this->getUrl("css/mainActive.css"));
 
@@ -89,6 +97,10 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		define("LOGO_LINK", $this->getUrl("images/nectar_logo.png"));
 
 		require_once(__DIR__."/vendor/autoload.php");
+		
+		$id_field_name = "subjid";
+		$this->id_field_name = $id_field_name;
+		$this->record_fields[] = $id_field_name;
 	}
 	
 	// LOW LEVEL methods
@@ -133,6 +145,11 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		return $this->dags;
 	}
 	public function getFieldLabelMapping($fieldName = false) {
+		global $Proj;
+		if ($Proj->metadata[$fieldName]['element_type'] == 'calc') {
+			return false;
+		}
+		
 		if(!isset($this->mappings)) {
 			$this->mappings = [];
 			foreach($this->record_fields as $thisField) {
@@ -168,7 +185,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 					'project_id' => $uadProject,
 					'return_format' => 'json',
 					'fields' => [
-						'record_id',
+						$this->id_field_name,
 						'first_name',
 						'last_name',
 						'role_ext_2',
@@ -202,7 +219,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 
 			$projectDags = $this->getDAGs($project_id);
 
-			// add dag property to each based on its record_id
+			// add dag and dag_name property to each record
 			foreach ($edc_data as $record) {
 				foreach($projectDags as $groupId => $thisDag) {
 				    if($thisDag->unique == $record->redcap_data_access_group) {
@@ -235,6 +252,20 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 
         return $this->screening_data;
     }
+	private function getInclusionByScreeningId() {
+		if (!$this->screening_data) {
+			$this->getScreeningData();
+		}
+		$inclusions_by_id = [];
+		
+		foreach ($this->screening_data as $screening_rid => $screening_record) {
+			if ($screening_record->screening_id) {
+				$inclusions_by_id[$screening_record->screening_id] = $screening_record->include_yn;
+			}
+		}
+		
+		return $inclusions_by_id;
+	}
 	public function getUser() {
 		if (!isset($this->user)) {
 		    $this->user = false;
@@ -298,16 +329,12 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
             }
 			$this->getEDCData($project_id);
 			
-			$records = [];
-			$temp_records_obj = new \stdClass();
-			$label_params = [
-				'project_id' => $project_id
-			];
-
 			// iterate over edc_data, collating data into record objects
+			$temp_records_obj = new \stdClass();
 			foreach ($this->edc_data as $record_event) {
 				// establish $record and $rid
-				$rid = $record_event->record_id;
+				$id_field_name = $this->id_field_name;
+				$rid = $record_event->$id_field_name;
 				if (!$record = $temp_records_obj->$rid) {
 					$record = new \stdClass();
 					
@@ -316,7 +343,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 						$record->$field = "";
 					}
 					
-					$record->record_id = $rid;
+					$record->$id_field_name = $rid;
 					$temp_records_obj->$rid = $record;
 				}
 				
@@ -324,11 +351,10 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				foreach ($this->record_fields as $field) {
 					if (!empty($record_event->$field)) {
 						$labels = $this->getFieldLabelMapping($field);
-
-						if($labels) {
+						
+						if($labels != false) {
 							$record->$field = $labels[$record_event->$field];
-						}
-						else {
+						} else {
 							$record->$field = $record_event->$field;
 						}
 
@@ -340,6 +366,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				}
 			}
 			
+			$records = [];
 			foreach ($temp_records_obj as $record) {
 				if (!empty($record->redcap_data_access_group))
 					$records[] = $record;
@@ -374,7 +401,8 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		foreach ($this->records as $record) {
 			if (($this->user->authorized == '2' and $record->dag_name == $this->user->dag_group_name) or $this->user->authorized == '3') {
 				$row = new \stdClass();
-				$row->id = $record->record_id;
+				$id_field_name = $this->id_field_name;
+				$row->id = $record->$id_field_name;
 				if ($this->user->authorized == '3') {
 					$row->site = $record->dag_name;
 				}
@@ -411,6 +439,8 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		$this->getDAGs();
 		$this->getRecords();
 		
+		$inclusion_by_screening_ids = $this->getInclusionByScreeningId();
+		
 		$data = new \stdClass();
 		$data->totals = json_decode('[
 			{
@@ -418,14 +448,22 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				"enrolled": 1600,
 				"treated": 1600,
 				"fpe": "-",
-				"lpe": "-"
+				"lpe": "-",
+				"screened": "-",
+				"eligible": "-",
+				"randomized": "-",
+				"treated2": "-"
 			},
 			{
 				"name": "Current Enrolled",
 				"enrolled": 0,
 				"treated": 0,
 				"fpe": "-",
-				"lpe": "-"
+				"lpe": "-",
+				"screened": "0",
+				"eligible": "0",
+				"randomized": "0",
+				"treated2": "0"
 			}
 		]');
 		$data->sites = [];
@@ -433,6 +471,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		// create temporary sites container
 		$sites = new \stdClass();
 		foreach ($this->records as $record) {
+			$abc = true;
 			if (!$patient_dag = $record->dag)
 				continue;
 
@@ -446,14 +485,19 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$site->treated = 0;
 				$site->fpe = '-';
 				$site->lpe = '-';
+				$site->screened = 0;
+				$site->eligible = 0;
+				$site->randomized = 0;
+				$site->treated2 = 0;
 			}
 			
-			// update using patient data
+			// // update columns using patient data
+			// Enrolled
 			if (!empty($record->randomization)) {
 				$data->totals[1]->enrolled++;
 				$site->enrolled = $site->enrolled + 1;
 			}
-
+			// FPE and LPE
 			$enroll_date = $record->randomization_date;
 			if (!empty($enroll_date)) {
 				if ($site->fpe == '-') {
@@ -469,10 +513,37 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 						$site->lpe = $enroll_date;
 				}
 			}
-			
+			// Treated
 			if (!empty($record->transfusion_given)) {
 				$data->totals[1]->treated++;
 				$site->treated = $site->treated + 1;
+			}
+			// Screened
+			if ($inclusion_by_screening_ids[$record->screening_id] == 1) {
+				$data->totals[1]->screened++;
+				$site->screened++;
+			}
+			// Eligible
+			if ($record->append_d_calc == 1 || $record->append_e_calc == 1) {
+				$data->totals[1]->eligible++;
+				$site->eligible++;
+			}
+			// Randomized
+			if ($record->randomization_arm != '') {
+				$data->totals[1]->randomized++;
+				$site->randomized++;
+			}
+			// Treated (2nd)
+			if (
+				$record->sda_a1d1 != '' ||
+				$record->sda_a1d2 != '' ||
+				$record->sda_a1d3 != '' ||
+				$record->sda_a1d4 != '' ||
+				$record->sda_a1d5 != '' ||
+				$record->sda_a3d1 != ''
+			) {
+				$data->totals[1]->treated2++;
+				$site->treated2++;
 			}
 		}
 		
@@ -796,7 +867,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		}
 		
 		// add extra field(s) useful for site activation tables
-		$activation_fields[] = 'record_id';
+		$activation_fields[] = $this->id_field_name;
 		$activation_fields[] = 'role';
 		$activation_fields[] = 'site_number';
 		
@@ -1000,7 +1071,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		$personnel = new \stdClass();
 		$reg_pid = $this->getProjectSetting('site_regulation_project');
 		$reg_project_event_table = \REDCap::getLogEventTable($reg_pid);
-		$rid_field = $this->getRecordIdField($reg_pid);
+		$reg_id_field = $this->getRecordIdField($reg_pid);
 		
 		// filter out older records if multiple exist for a given [role]
 		// throw exception if can't determine a single record for a given role
@@ -1020,8 +1091,8 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				// we want to select personnel based on the record's creation date (recent records will get chosen over older records) and their [role] field value
 				// we also want to make sure we select 1 and only 1 person for each role PER SITE (there is a 1:1 site:DAG correlation)
 				$candidate = new \stdClass();
-				$rid = $personnel_record_event->$rid_field;
-				$candidate->$rid_field = $rid;
+				$rid = $personnel_record_event->$reg_id_field;
+				$candidate->$reg_id_field = $rid;
 				$candidate->role = $personnel_record_event->role;
 				$candidate->dag = $personnel_record_event->redcap_data_access_group;
 				
@@ -1086,7 +1157,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				
 				// loop over instance info to record max instance id for each personnel form
 				foreach($personnel_data as $i => $record_data) {
-					if ($record_data->$rid_field == $data->$rid_field && isset($record_data->redcap_repeat_instrument)) {
+					if ($record_data->$reg_id_field == $data->$reg_id_field && isset($record_data->redcap_repeat_instrument)) {
 						$form_name = $record_data->redcap_repeat_instrument;
 						if (!isset($latest_instances->$form_name)) {
 							$latest_instances->$form_name = $record_data->redcap_repeat_instance;
@@ -1098,14 +1169,14 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				
 				foreach($personnel_data as $i => $record_data) {
 					if (
-						// if it's the latest repeated instance for this form, or not a repeated form, and the record_id matches this personnel: copy properties
+						// if it's the latest repeated instance for this form, or not a repeated form, and the record's id field matches this personnel: copy properties
 						((isset($latest_instances->{$record_data->redcap_repeat_instrument})
 						&&
 						$latest_instances->{$record_data->redcap_repeat_instrument} == $record_data->redcap_repeat_instance)
 						||
 						!isset($record_data->redcap_repeat_instrument))
 						&&
-						$record_data->$rid_field == $data->$rid_field
+						$record_data->$reg_id_field == $data->$reg_id_field
 					) {
 						foreach($record_data as $key => $value) {
 							$data->$key = $value;
@@ -1171,8 +1242,9 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 					} elseif ($site->$db_data_field == "Confirmed by VCC") {
 						if ($personnel->$dag->$role->$check_field_prop == 'Checked') {
 							// get most recent sign-off date (from most recent instance)
-							$max_instance = $this->getMaxInstance($reg_pid, $personnel->$dag->$role->record_id, $personnel_event_id, $check_field);
-							$history = $this->getDataHistoryLog($reg_pid, $personnel->$dag->$role->record_id, $personnel_event_id, $check_field, $max_instance);
+							$id_field_name = $this->id_field_name;
+							$max_instance = $this->getMaxInstance($reg_pid, $personnel->$dag->$role->$id_field_name, $personnel_event_id, $check_field);
+							$history = $this->getDataHistoryLog($reg_pid, $personnel->$dag->$role->$id_field_name, $personnel_event_id, $check_field, $max_instance);
 							if (!empty($history)) {
 								$cells[$data_field]['last_changed'] = substr(array_key_first($history), 0, -2);	// chop off last two digits -- timestamp was previously multiplied by 100
 								$checked_date = new \DateTime(date("Y-m-d", $cells[$data_field]['last_changed']));
