@@ -488,7 +488,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$site->lpe = '-';
 				
 				$site->screened = 0;
-				if (isset($inclusionData[$site->dag]) {
+				if (isset($inclusionData[$site->dag])) {
 					$site->screened = $inclusionData[$site->dag];
 				}
 				
