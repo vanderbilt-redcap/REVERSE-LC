@@ -252,19 +252,26 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 
         return $this->screening_data;
     }
-	private function getInclusionByScreeningId() {
+	private function getInclusionData() {
 		if (!$this->screening_data) {
 			$this->getScreeningData();
 		}
-		$inclusions_by_id = [];
-		
+		$inclusionData = [];
+		$total = 0;
 		foreach ($this->screening_data as $screening_rid => $screening_record) {
-			if ($screening_record->screening_id) {
-				$inclusions_by_id[$screening_record->screening_id] = $screening_record->include_yn;
+			$dag = $screening_record->redcap_data_access_group;
+			if (!isset($inclusionData[$dag])) {
+				$inclusionData[$dag] = 0;
+			}
+			if ($screening_record->include_yn == '1') {
+				$total++;
+				$inclusionData[$dag]++;
 			}
 		}
 		
-		return $inclusions_by_id;
+		$inclusionData["_total"] = $total;
+		
+		return $inclusionData;
 	}
 	public function getUser() {
 		if (!isset($this->user)) {
@@ -439,7 +446,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		$this->getDAGs();
 		$this->getRecords();
 		
-		$inclusion_by_screening_ids = $this->getInclusionByScreeningId();
+		$inclusionData = $this->getInclusionData();
 		
 		$data = new \stdClass();
 		$data->totals = json_decode('[
@@ -456,7 +463,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				"name": "Current Enrolled",
 				"fpe": "-",
 				"lpe": "-",
-				"screened": "0",
+				"screened": ' . $inclusionData["_total"] . ',
 				"eligible": "0",
 				"randomized": "0",
 				"treated": "0"
@@ -479,7 +486,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$site->dag = $record->redcap_data_access_group;
 				$site->fpe = '-';
 				$site->lpe = '-';
-				$site->screened = 0;
+				$site->screened = $inclusionData[$site->dag];
 				$site->eligible = 0;
 				$site->randomized = 0;
 				$site->treated = 0;
@@ -501,11 +508,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 					if (strtotime($site->lpe) < strtotime($enroll_date))
 						$site->lpe = $enroll_date;
 				}
-			}
-			// Screened
-			if ($inclusion_by_screening_ids[$record->screening_id] == 1) {
-				$data->totals[1]->screened++;
-				$site->screened++;
 			}
 			// Eligible
 			if ($record->append_d_calc == 1 || $record->append_e_calc == 1) {
