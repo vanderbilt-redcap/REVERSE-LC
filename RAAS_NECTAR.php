@@ -486,7 +486,12 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$site->dag = $record->redcap_data_access_group;
 				$site->fpe = '-';
 				$site->lpe = '-';
-				$site->screened = $inclusionData[$site->dag];
+				
+				$site->screened = 0;
+				if (isset($inclusionData[$site->dag]) {
+					$site->screened = $inclusionData[$site->dag];
+				}
+				
 				$site->eligible = 0;
 				$site->randomized = 0;
 				$site->treated = 0;
