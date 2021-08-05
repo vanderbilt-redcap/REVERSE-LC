@@ -36,8 +36,6 @@
 					<thead>
 						<tr>
 							<th></th>
-							<th>Enrolled</th>
-							<th>Treated</th>
 							<th>FPE</th>
 							<th>LPE</th>
 							<th>Screened</th>
@@ -55,20 +53,16 @@
 							<td></td>
 							<td></td>
 							<td></td>
-							<td></td>
-							<td></td>
 						</tr>
 						{% for totalDetails in allSites["totals"] %}
 							<tr>
 								<td>{{ totalDetails["name"] }}</td>
-								<td>{{ totalDetails["enrolled"] }}</td>
-								<td>{{ totalDetails["treated"] }}</td>
 								<td>{{ totalDetails["fpe"] }}</td>
 								<td>{{ totalDetails["lpe"] }}</td>
 								<td>{{ totalDetails["screened"] }}</td>
 								<td>{{ totalDetails["eligible"] }}</td>
 								<td>{{ totalDetails["randomized"] }}</td>
-								<td>{{ totalDetails["treated2"] }}</td>
+								<td>{{ totalDetails["treated"] }}</td>
 							</tr>
 						{% endfor %}
 						<tr class="first_row">
@@ -79,20 +73,16 @@
 							<td></td>
 							<td></td>
 							<td></td>
-							<td></td>
-							<td></td>
 						</tr>
 						{% for siteDetails in allSites["sites"] %}
 							<tr data-dag="{{ siteDetails["dag"] }}">
 								<td>{{ siteDetails["name"] }}</td>
-								<td>{{ siteDetails["enrolled"] }}</td>
-								<td>{{ siteDetails["treated"] }}</td>
 								<td>{{ siteDetails["fpe"] }}</td>
 								<td>{{ siteDetails["lpe"] }}</td>
 								<td>{{ siteDetails["screened"] }}</td>
 								<td>{{ siteDetails["eligible"] }}</td>
 								<td>{{ siteDetails["randomized"] }}</td>
-								<td>{{ siteDetails["treated2"] }}</td>
+								<td>{{ siteDetails["treated"] }}</td>
 							</tr>
 						{% endfor %}
 					</tbody>

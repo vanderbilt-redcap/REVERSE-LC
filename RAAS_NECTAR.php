@@ -445,25 +445,21 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		$data->totals = json_decode('[
 			{
 				"name": "Target",
-				"enrolled": 1600,
-				"treated": 1600,
 				"fpe": "-",
 				"lpe": "-",
 				"screened": "-",
 				"eligible": "-",
-				"randomized": "-",
-				"treated2": "-"
+				"randomized": 1600,
+				"treated": 1600
 			},
 			{
 				"name": "Current Enrolled",
-				"enrolled": 0,
-				"treated": 0,
 				"fpe": "-",
 				"lpe": "-",
 				"screened": "0",
 				"eligible": "0",
 				"randomized": "0",
-				"treated2": "0"
+				"treated": "0"
 			}
 		]');
 		$data->sites = [];
@@ -481,22 +477,15 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$site = $sites->$patient_dag;
 				$site->name = $record->dag_name;
 				$site->dag = $record->redcap_data_access_group;
-				$site->enrolled = 0;
-				$site->treated = 0;
 				$site->fpe = '-';
 				$site->lpe = '-';
 				$site->screened = 0;
 				$site->eligible = 0;
 				$site->randomized = 0;
-				$site->treated2 = 0;
+				$site->treated = 0;
 			}
 			
 			// // update columns using patient data
-			// Enrolled
-			if (!empty($record->randomization)) {
-				$data->totals[1]->enrolled++;
-				$site->enrolled = $site->enrolled + 1;
-			}
 			// FPE and LPE
 			$enroll_date = $record->randomization_date;
 			if (!empty($enroll_date)) {
@@ -513,11 +502,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 						$site->lpe = $enroll_date;
 				}
 			}
-			// Treated
-			if (!empty($record->transfusion_given)) {
-				$data->totals[1]->treated++;
-				$site->treated = $site->treated + 1;
-			}
 			// Screened
 			if ($inclusion_by_screening_ids[$record->screening_id] == 1) {
 				$data->totals[1]->screened++;
@@ -533,7 +517,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$data->totals[1]->randomized++;
 				$site->randomized++;
 			}
-			// Treated (2nd)
+			// Treated
 			if (
 				$record->sda_a1d1 != '' ||
 				$record->sda_a1d2 != '' ||
@@ -542,8 +526,8 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$record->sda_a1d5 != '' ||
 				$record->sda_a3d1 != ''
 			) {
-				$data->totals[1]->treated2++;
-				$site->treated2++;
+				$data->totals[1]->treated++;
+				$site->treated++;
 			}
 		}
 		
@@ -553,12 +537,12 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			$data->sites[] = $site;
 		}
 		
-		// sort all sites, enrolled ascending
+		// sort all sites, randomized descending
 		if (!function_exists(__NAMESPACE__ . '\sortAllSitesData')) {
 			function sortAllSitesData($a, $b) {
-				if ($a->enrolled == $b->enrolled)
+				if ($a->randomized == $b->randomized)
 					return 0;
-				return $a->enrolled < $b->enrolled ? 1 : -1;
+				return $a->randomized < $b->randomized ? 1 : -1;
 			}
 		}
 		uasort($data->sites, __NAMESPACE__ . '\sortAllSitesData');
@@ -637,6 +621,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 	}
 	public function getEnrollmentChartData($site = null) {
 		// determine earliest screened date (upon which weeks array will be based)
+		// 2021-08-05 we're changing to count "Randomized" instead of "Enrolled"
 		$enroll_data = $this->getEDCData();
 		$first_date = date("Y-m-d");
 		$last_date = date("Y-m-d", 0);
@@ -660,10 +645,10 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		// make report data object and rows
 		$enrollment_chart_data = new \stdClass();
 		$enrollment_chart_data->rows = [];
-		$cumulative_enrolled = 0;
+		$cumulative_randomized = 0;
 		$iterations = 0;
 		while (true) {
-			$screened_this_week = 0;
+			$randomized_this_week = 0;
 			
 			// determine week boundary dates
 			$day_offset1 = ($iterations) * 7;
@@ -683,12 +668,12 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$ts_x = strtotime($record->randomization_date);
 				$site_match_or_null = $site === null ? true : $record->redcap_data_access_group == $site;
 				if ($ts_a <= $ts_x and $ts_x <= $ts_b and $site_match_or_null)
-					$enrolled_this_week++;
+					$randomized_this_week++;
 			}
-			$cumulative_enrolled += $enrolled_this_week;
+			$cumulative_randomized += $randomized_this_week;
 			
-			$row[1] = $enrolled_this_week;
-			$row[2] = $cumulative_enrolled;
+			$row[1] = $randomized_this_week;
+			$row[2] = $cumulative_randomized;
 			
 			$enrollment_chart_data->rows[] = $row;
 			
@@ -700,7 +685,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			if ($cutoff_timestamp > strtotime($last_date) or $iterations > 999)
 				break;
 		}
-		$enrollment_chart_data->rows[] = ["Grand Total", $cumulative_enrolled, $cumulative_enrolled];
+		$enrollment_chart_data->rows[] = ["Grand Total", $cumulative_randomized, $cumulative_randomized];
 		return $enrollment_chart_data;
 	}
 	public function getExclusionReportData() {
