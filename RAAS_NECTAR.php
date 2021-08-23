@@ -644,10 +644,10 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		if (strtotime($last_date) == 0)
 			$last_date = $first_date;
 		
-		// determine date of Monday on or before first_date found
+		// determine date of sunday on or before first_date found
 		$day_of_week = date("N", strtotime($first_date));
-		$rewind_x_days = $day_of_week - 1;
-		$first_monday = date("Y-m-d", strtotime("-$rewind_x_days days", strtotime($first_date)));
+		$rewind_x_days = $day_of_week;
+		$first_sunday = date("Y-m-d", strtotime("-$rewind_x_days days", strtotime($first_date)));
 		
 		// make report data object and rows
 		$enrollment_chart_data = new \stdClass();
@@ -659,9 +659,9 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			
 			// determine week boundary dates
 			$day_offset1 = ($iterations) * 7;
-			$day_offset2 = $day_offset1 + 4;
-			$date1 = date("Y-m-d", strtotime("+$day_offset1 days", strtotime($first_monday)));
-			$date2 = date("Y-m-d", strtotime("+$day_offset2 days", strtotime($first_monday)));
+			$day_offset2 = $day_offset1 + 6;
+			$date1 = date("Y-m-d", strtotime("+$day_offset1 days", strtotime($first_sunday)));
+			$date2 = date("Y-m-d", strtotime("+$day_offset2 days", strtotime($first_sunday)));
 			
 			$row = [];
 			$row[0] = date("n/j", strtotime($date1)) . "-" . date("n/j", strtotime($date2));
@@ -669,10 +669,11 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			
 			// count records that were screened this week
 			$ts_a = strtotime($date1);
-			$ts_b = strtotime("+24 hours", strtotime($date2));
-			// echo "\$date1, \$date2, \$ts_a, \$ts_b: $date1, $date2, $ts_a, $ts_b\n";
+			$ts_b = strtotime($date2);
+			
 			foreach ($enroll_data as $record) {
-				$ts_x = strtotime($record->randomization_date);
+				// making sure the H:m part of the d-m-Y H:m field doesn't cause us to miscount
+				$ts_x = strtotime(date("Y-m-d", strtotime($record->randomization_date)));
 				$site_match_or_null = $site === null ? true : $record->redcap_data_access_group == $site;
 				if ($ts_a <= $ts_x and $ts_x <= $ts_b and $site_match_or_null)
 					$randomized_this_week++;
