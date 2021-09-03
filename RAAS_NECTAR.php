@@ -713,8 +713,19 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			// iterate through screening records, summing exclusion reasons
 			$screening_data = $this->getScreeningData();
 			foreach ($screening_data as $record) {
-				if (!empty($record->exclude_primary_reason) and isset($exclusion_counts[$record->exclude_primary_reason]))
-					$exclusion_counts[$record->exclude_primary_reason]++;
+				// // use below if exclude_primary_reason is a dropdown field type
+				// if (!empty($record->exclude_primary_reason) and isset($exclusion_counts[$record->exclude_primary_reason]))
+					// $exclusion_counts[$record->exclude_primary_reason]++;
+				
+				// use below if exclude_primary_reason is a checkbox field type
+				foreach($record as $field_name => $value) {
+					preg_match("/exclude_primary_reason___(\d*)/", $field_name, $match);
+					$exclusion_index = intval($match[1]);
+					
+					if ($value && $exclusion_index > 0) {
+						$exclusion_counts[$exclusion_index]++;
+					}
+				}
 			}
 			
 			// add rows to data object
