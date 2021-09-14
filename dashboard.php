@@ -10,6 +10,7 @@ $template = $twig->load("dashboard.twig");
 $allSitesData = $module->getAllSitesData();
 $mySitesData = $module->getMySiteData();
 $siteStartupData = $module->getSiteStartupData();
+$module->updateAllSitesData($allSitesData['sites'], $siteStartupData);
 $authorized = $module->user->authorized;
 
 // prepare site names for Screening Log Report dropdown

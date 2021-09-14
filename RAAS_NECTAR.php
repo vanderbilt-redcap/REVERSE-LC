@@ -474,7 +474,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		// create temporary sites container
 		$sites = new \stdClass();
 		foreach ($this->records as $record) {
-			$abc = true;
 			if (!$patient_dag = $record->dag)
 				continue;
 
@@ -557,6 +556,18 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		// return
 		$this->all_sites_data = $data;
 		return json_decode(json_encode($this->all_sites_data), true);
+	}
+	public function updateAllSitesData(&$sites, $startup) {
+		foreach ($sites as &$site) {
+			// Site Activation (date)
+			foreach ($startup->sites as $site_i => $siteData) {
+				$site_number = $siteData->site_number;
+				if ($site_number == substr($site['name'], 0, strlen($site_number))) {
+					$site['open_date'] = $siteData->open_date;
+					break;
+				}
+			}
+		}
 	}
 	public function getScreeningLogData($site = null) {
 		// determine earliest screened date (upon which weeks array will be based)
@@ -883,7 +894,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		
 		// add form complete fields so we get all instances (even if instances are full of empty field values)
 		$activation_fields = array_merge($activation_fields, $this->personnel_form_complete_fields);
-		
 		$params = [
 			"project_id" => $regulatoryPID,
 			"return_format" => 'json',

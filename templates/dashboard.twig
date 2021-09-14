@@ -42,11 +42,13 @@
 							<th>Eligible</th>
 							<th>Randomized</th>
 							<th>Treated</th>
+							<th>Site Activation</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr class="first_row">
 							<td>Entire Project</td>
+							<td></td>
 							<td></td>
 							<td></td>
 							<td></td>
@@ -63,10 +65,12 @@
 								<td>{{ totalDetails["eligible"] }}</td>
 								<td>{{ totalDetails["randomized"] }}</td>
 								<td>{{ totalDetails["treated"] }}</td>
+								<td>-</td>
 							</tr>
 						{% endfor %}
 						<tr class="first_row">
 							<td>By Site</td>
+							<td></td>
 							<td></td>
 							<td></td>
 							<td></td>
@@ -83,6 +87,7 @@
 								<td>{{ siteDetails["eligible"] }}</td>
 								<td>{{ siteDetails["randomized"] }}</td>
 								<td>{{ siteDetails["treated"] }}</td>
+								<td>{{ siteDetails["open_date"] }}</td>
 							</tr>
 						{% endfor %}
 					</tbody>
