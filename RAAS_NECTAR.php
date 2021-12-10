@@ -241,13 +241,17 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
                 $projectId = $_GET['pid'];
             }
 
-            $screeningProject = $this->getProjectSetting("screening_project", $projectId);
+            $screeningProjectId = $this->getProjectSetting("screening_project", $projectId);
 
             $this->screening_data = json_decode(\REDCap::getData([
-                "project_id" => $screeningProject,
+                "project_id" => $screeningProjectId,
 				"return_format" => "json",
                 'exportDataAccessGroups' => true
             ]));
+			
+			$screeningProject = new \Project($screeningProjectId);
+			preg_match_all("/<li>(.+)$/m", $screeningProject->metadata['excl_desc']['element_label'], $labels);
+			$this->excl_desc_labels = $labels[1];
         }
 
         return $this->screening_data;
@@ -263,7 +267,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			if (!isset($inclusionData[$dag])) {
 				$inclusionData[$dag] = 0;
 			}
-			if ($screening_record->include_yn == '1') {
+			if ($screening_record->include_yn == '1' || $screening_record->incl_not_met___4 == '1') {
 				$total++;
 				$inclusionData[$dag]++;
 			}
@@ -715,7 +719,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			
 			// get labels, init exclusion counts
 			$screening_pid = $this->getProjectSetting('screening_project');
-			$labels = $this->getChoiceLabels("exclude_primary_reason", $screening_pid);
+			$labels = $this->excl_desc_labels;
 			$exclusion_counts = [];
 			foreach ($labels as $i => $label) {
 				$exclusion_counts[$i] = 0;
