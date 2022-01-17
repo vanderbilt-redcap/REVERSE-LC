@@ -1285,13 +1285,13 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		}
 		
 		// add count of days between site engaged and site open for enrollment
-		foreach($sites as $index => $site) {
+		foreach($sites as &$site) {
 			$site_start_ts = strtotime($site->site_engaged);
 			$site_open_ts = strtotime($site->open_date);
 			if ($site_start_ts && $site_open_ts) {
 				$site_start_date = new \DateTime(date("Y-m-d", $site_start_ts));
 				$site_open_date = new \DateTime(date("Y-m-d", $site_open_ts));
-				$sites[$index]->start_to_finish_duration = $site_open_date->diff($site_start_date)->format("%a") . " days to site activation";
+				$site->start_to_finish_duration = $site_open_date->diff($site_start_date)->format("%a") . " days to site activation";
 			}
 		}
 	}
