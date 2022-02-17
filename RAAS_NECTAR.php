@@ -250,7 +250,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
             ]));
 			
 			$screeningProject = new \Project($screeningProjectId);
-			preg_match_all("/<li>(.+)$/m", $screeningProject->metadata['excl_desc']['element_label'], $labels);
+			preg_match_all("/<li>(.+)$/m", $screeningProject->metadata['excl_desc_2']['element_label'], $labels);
 			$this->excl_desc_labels = $labels[1];
         }
 
@@ -725,20 +725,73 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$exclusion_counts[$i] = 0;
 			}
 			
-			// iterate through screening records, summing exclusion reasons
+			// iterate through screening records, summing exclusion reasons from [exclude_primary_reason]
 			$screening_data = $this->getScreeningData();
 			foreach ($screening_data as $record) {
 				// // use below if exclude_primary_reason is a dropdown field type
 				// if (!empty($record->exclude_primary_reason) and isset($exclusion_counts[$record->exclude_primary_reason]))
 					// $exclusion_counts[$record->exclude_primary_reason]++;
 				
-				// use below if exclude_primary_reason is a checkbox field type
+				// use below if exclude_primary_reason is a checkbox field type	//	can't think of a smarter way to do this
 				foreach($record as $field_name => $value) {
 					preg_match("/exclude_primary_reason___(\d*)/", $field_name, $match);
 					$exclusion_index = intval($match[1]);
-					
+					unset($report_table_index);
 					if ($value && $exclusion_index > 0) {
-						$exclusion_counts[$exclusion_index]++;
+						switch ($exclusion_index) {
+							case 2:
+								$report_table_index = 0;
+								break;
+							case 3:
+								$report_table_index = 1;
+								break;
+							case 5:
+								$report_table_index = 2;
+								break;
+							case 6:
+								$report_table_index = 3;
+								break;
+							case 7:
+								$report_table_index = 4;
+								break;
+							case 8:
+								$report_table_index = 5;
+								break;
+							case 9:
+								$report_table_index = 6;
+								break;
+							case 13:
+								$report_table_index = 7;
+								break;
+							case 14:
+								$report_table_index = 0;
+								break;
+							case 15:
+								$report_table_index = 1;
+								break;
+							case 16:
+								$report_table_index = 2;
+								break;
+							case 17:
+								$report_table_index = 3;
+								break;
+							case 18:
+								$report_table_index = 4;
+								break;
+							case 19:
+								$report_table_index = 5;
+								break;
+							case 20:
+								$report_table_index = 6;
+								break;
+							case 21:
+								$report_table_index = 7;
+								break;
+						}
+					}
+					
+					if (is_numeric($report_table_index)) {
+						$exclusion_counts[$report_table_index]++;
 					}
 				}
 			}
@@ -746,7 +799,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			// add rows to data object
 			foreach ($labels as $i => $label) {
 				$exclusion_data->rows[] = [
-					"#$i",
+					"#" . ($i+1),
 					$label,
 					$exclusion_counts[$i]
 				];
