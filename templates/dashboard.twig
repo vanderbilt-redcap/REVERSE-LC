@@ -30,6 +30,18 @@
 	{#<div class='row' style="height:1px"></div>#}
 	<div id="allSitesData" class="row">
 		<div class="blue_bar col-12"></div>
+		<div>
+			<div class="dropdown p-2">
+				<button class="btn btn-primary dropdown-toggle" type="button" id="site_locality_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					Site Locality: Global
+				</button>
+				<div class="dropdown-menu" aria-labelledby="site_locality_dropdown">
+					<a class="dropdown-item locality-dd-item" href="#">Global</a>
+					<a class="dropdown-item locality-dd-item" href="#">Domestic</a>
+					<a class="dropdown-item locality-dd-item" href="#">International</a>
+				</div>
+			</div>
+		</div>
 		<div class="row" style="width: 100%;">
 			<div class="col-6 has_enrollment_table">
 				<table class="dashboard">
@@ -79,7 +91,7 @@
 							<td></td>
 						</tr>
 						{% for siteDetails in allSites["sites"] %}
-							<tr data-dag="{{ siteDetails["dag"] }}">
+							<tr data-dag="{{ siteDetails["dag"] }}" data-locality="{{ siteDetails['locality'] }}">
 								<td>{{ siteDetails["name"] }}</td>
 								<td>{{ siteDetails["open_date"] }}</td>
 								<td>{{ siteDetails["fpe"] }}</td>

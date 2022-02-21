@@ -261,21 +261,60 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			$this->getScreeningData();
 		}
 		$inclusionData = [];
+		$totalDomestic = 0;
+		$totalInternational = 0;
 		$total = 0;
 		foreach ($this->screening_data as $screening_rid => $screening_record) {
 			$dag = $screening_record->redcap_data_access_group;
 			if (!isset($inclusionData[$dag])) {
 				$inclusionData[$dag] = 0;
 			}
+			
 			if ($screening_record->include_yn == '1' || $screening_record->incl_not_met___4 == '1') {
 				$total++;
 				$inclusionData[$dag]++;
 			}
+			
+			// if ($this->isSiteDomestic($) {
+				// $totalDomestic++;
+			// } elseif (international) {
+				// $totalInternational++;
+			// }
 		}
 		
 		$inclusionData["_total"] = $total;
+		$inclusionData["_domestic"] = $totalDomestic;
+		$inclusionData["_international"] = $totalInternational;
 		
 		return $inclusionData;
+	}
+	private function getRegulatoryData($projectId = false) {
+		if (!$this->regulatory_data) {
+			if(!$projectId) {
+				$projectId = $_GET['pid'];
+			}
+			
+            $regulatoryProjectId = $this->getProjectSetting("site_regulation_project", $projectId);
+			$this->regulatory_data = json_decode(\REDCap::getData([
+                "project_id" => $regulatoryProjectId,
+				"return_format" => "json",
+                'exportDataAccessGroups' => true,
+				"fields" => ["record_id", "edc_dag_id", "site_international"]
+            ]));
+			
+			$this->regulatory_data['domestic_sites'] = [];
+			$this->regulatory_data['international_sites'] = [];
+			
+			foreach ($this->regulatory_data as $reg_record) {
+				if ($reg_record->site_international == '1') {
+					$this->regulatory_data['domestic_sites'][] = $reg_record->record_id;
+				} elseif ($reg_record->site_international == '0') {
+					$this->regulatory_data['international_sites'][] = $reg_record->record_id;
+				}
+			}
+        }
+
+        return $this->regulatory_data;
 	}
 	public function getUser() {
 		if (!isset($this->user)) {
@@ -293,6 +332,44 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		}
 		
 		return $this->user;
+	}
+	public function isSiteDomestic($site_name_arg) {
+		$filtered_site_arg = preg_replace("/[^a-z]/", "", strtolower($site_name_arg));
+		
+		$reg_data = $this->getRegulatoryData();
+		
+		if (isset($_GET['TESTING'])) {
+			if ($filtered_site_arg === 'siteb') {
+				return true;
+			}
+		}
+		
+		foreach ($reg_data['domestic_sites'] as $site_name) {
+			$filtered_site_name = preg_replace("/[^a-z]/", "", strtolower($site_name));
+			if ($filtered_site_name === $filtered_site_arg) {
+				return true;
+			}
+		}
+		return false;
+	}
+	public function isSiteInternational($site_name_arg) {
+		$filtered_site_arg = preg_replace("/[^a-z]/", "", strtolower($site_name_arg));
+		
+		$reg_data = $this->getRegulatoryData();
+		
+		if (isset($_GET['TESTING'])) {
+			if ($filtered_site_arg === 'sitec') {
+				return true;
+			}
+		}
+		
+		foreach ($reg_data['international_sites'] as $site_name) {
+			$filtered_site_name = preg_replace("/[^a-z]/", "", strtolower($site_name));
+			if ($filtered_site_name === $filtered_site_arg) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	// HIGHER LEVEL methods
@@ -451,6 +528,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		$this->getRecords();
 		
 		$inclusionData = $this->getInclusionData();
+		$reg_data = $this->getRegulatoryData();
 		
 		$data = new \stdClass();
 		$data->totals = json_decode('[
@@ -467,7 +545,25 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				"name": "Current Enrolled",
 				"fpe": "-",
 				"lpe": "-",
-				"screened": ' . $inclusionData["_total"] . ',
+				"screened": ' . $inclusionData['_total'] . ',
+				"eligible": "0",
+				"randomized": "0",
+				"treated": "0"
+			},
+			{
+				"name": "Currently Enrolled (Domestic)",
+				"fpe": "-",
+				"lpe": "-",
+				"screened": ' . count($reg_data["domestic_sites"]) . ',
+				"eligible": "0",
+				"randomized": "0",
+				"treated": "0"
+			},
+			{
+				"name": "Currently Enrolled (International)",
+				"fpe": "-",
+				"lpe": "-",
+				"screened": ' . count($reg_data["international_sites"]) . ',
 				"eligible": "0",
 				"randomized": "0",
 				"treated": "0"
@@ -500,6 +596,12 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$site->treated = 0;
 			}
 			
+			if ($this->isSiteDomestic($site->name)) {
+				$site->locality = 'Domestic';
+			} elseif ($this->isSiteInternational($site->name)) {
+				$site->locality = 'International';
+			}
+			
 			// // update columns using patient data
 			// FPE and LPE
 			$enroll_date = $record->randomization_date;
@@ -521,11 +623,23 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			if ($record->append_d_calc == 1 || $record->append_e_calc == 1) {
 				$data->totals[1]->eligible++;
 				$site->eligible++;
+				
+				if ($site->locality == 'Domestic') {
+					$data->totals[2]->eligible++;
+				} elseif ($site->locality == 'International') {
+					$data->totals[3]->eligible++;
+				}
 			}
 			// Randomized
 			if ($record->randomization_arm != '') {
 				$data->totals[1]->randomized++;
 				$site->randomized++;
+				
+				if ($site->locality == 'Domestic') {
+					$data->totals[2]->randomized++;
+				} elseif ($site->locality == 'International') {
+					$data->totals[3]->randomized++;
+				}
 			}
 			// Treated
 			if (
@@ -538,6 +652,12 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			) {
 				$data->totals[1]->treated++;
 				$site->treated++;
+				
+				if ($site->locality == 'Domestic') {
+					$data->totals[2]->treated++;
+				} elseif ($site->locality == 'International') {
+					$data->totals[3]->treated++;
+				}
 			}
 		}
 		
@@ -641,13 +761,29 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		$screening_log_data->rows[] = ["Grand Total", $total_screened, $total_screened];
 		return $screening_log_data;
 	}
-	public function getEnrollmentChartData($site = null) {
+	// public function getEnrollmentChartData($site = null) {
+	public function getEnrollmentChartData($options = null) {
 		// determine earliest screened date (upon which weeks array will be based)
 		// 2021-08-05 we're changing to count "Randomized" instead of "Enrolled"
-		$enroll_data = $this->getEDCData();
+		
+		if (isset($options['site_dag'])) {
+			$site = $options['site_dag'];
+		}
+		if (isset($options['site_locality'])) {
+			$site_locality = $options['site_locality'];
+		}
+		
+		$all_enroll_data = $this->getEDCData();
+		$enroll_data_to_consider = [];
 		$first_date = date("Y-m-d");
 		$last_date = date("Y-m-d", 0);
-		foreach ($enroll_data as $record) {
+		foreach ($all_enroll_data as $record) {
+			if ($site_locality == "Domestic" and $this->isSiteDomestic($record->redcap_data_access_group) === false) {
+				continue;
+			} elseif ($site_locality == "International" and $this->isSiteInternational($record->redcap_data_access_group) === false) {
+				continue;
+			}
+			
 			$site_match_or_null = $site === null ? true : $record->redcap_data_access_group == $site;
 			if (!empty($record->randomization_date) and $site_match_or_null) {
 				if (strtotime($record->randomization_date) < strtotime($first_date))
@@ -655,6 +791,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				if (strtotime($record->randomization_date) > strtotime($last_date))
 					$last_date = date("Y-m-d", strtotime($record->randomization_date));
 			}
+			$enroll_data_to_consider[] = $record;
 		}
 		if (strtotime($last_date) == 0)
 			$last_date = $first_date;
@@ -686,7 +823,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			$ts_a = strtotime($date1);
 			$ts_b = strtotime($date2);
 			
-			foreach ($enroll_data as $record) {
+			foreach ($enroll_data_to_consider as $record) {
 				// making sure the H:m part of the d-m-Y H:m field doesn't cause us to miscount
 				$ts_x = strtotime(date("Y-m-d", strtotime($record->randomization_date)));
 				$site_match_or_null = $site === null ? true : $record->redcap_data_access_group == $site;
@@ -1603,4 +1740,5 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			return $link;
 		}
 	}
+
 }

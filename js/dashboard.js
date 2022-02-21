@@ -70,9 +70,54 @@ function clickedFolder(clickEvent) {
 	})
 }
 
+function setLocalityFilter(locality) {
+	$("tr[data-dag]").each(function(i, e) {
+		var row = $(e);
+		if (locality == "Global") {
+			row.show();
+		} else if (row.attr('data-locality') == locality) {
+			row.show();
+		} else {
+			row.hide();
+		}
+	});
+	
+	$("#site_locality_dropdown").text("Site Locality: " + locality);
+	window.site_locality_selected = locality;
+	
+	// update table and chart, filtering based on locality
+	$("#allSitesData tr").removeClass('selected');
+	$.ajax({
+		url: ENROLLMENT_CHART_DATA_AJAX_URL,
+		type: "POST",
+		data: {site_locality: locality},
+		cache: true,
+		dataType: "json"
+	})
+	.done(function(json) {
+		if (json.rows && json.rows.length > 1) {
+			// update enrollment chart with new data
+			json.rows.pop()
+			var week_labels = [];
+			var data1 = [];
+			var data2 = [];
+			json.rows.forEach(function(row) {
+				week_labels.push(row[0]);
+				data1.push(row[1]);
+				data2.push(row[2]);
+			})
+			enrollment_chart.data.labels = week_labels;
+			enrollment_chart.data.datasets[0].data = data1;
+			enrollment_chart.data.datasets[1].data = data2;
+			enrollment_chart.update();
+		}
+	});
+}
+
 $("document").ready(function() {
     activateTab("allSitesData");
-		
+	
+	window.site_locality_selected = "Global";
 	// get new Screening Log Report when select#site changes
 	$("select#site").change('change', function() {
 		var selected_site = "";
@@ -143,7 +188,7 @@ $("document").ready(function() {
 		$.ajax({
 			url: ENROLLMENT_CHART_DATA_AJAX_URL,
 			type: "POST",
-			data: {site_dag: site_dag},
+			data: {site_dag: site_dag, site_locality: window.site_locality_selected},
 			cache: false,
 			dataType: "json"
 		})
@@ -222,6 +267,12 @@ $("document").ready(function() {
 			}
 		}
 	});
+	
+	// change Enrollment Statistics "Site Locality" dropdown text when new locality selected
+	$("body").on("mousedown touchstart", ".locality-dd-item", function(event) {
+		var locality_label = $(event.target).text();
+		setLocalityFilter(locality_label)
+	})
 	
 	// show first site in activation tab
 	// $('.activation-container').first().show();

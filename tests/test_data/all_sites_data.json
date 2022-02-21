@@ -30,7 +30,8 @@
 			"treated": 0,
 			"fpe": "2020-01-01",
 			"lpe": "2020-03-01",
-			"dag": "002__site_b"
+			"dag": "002__site_b",
+			"locality": "Domestic"
 		},
 		{
 			"name": "003 - Site C",
@@ -38,7 +39,16 @@
 			"treated": 1,
 			"fpe": "-",
 			"lpe": "-",
-			"dag": "003__site_c"
+			"dag": "003__site_c",
+			"locality": "International"
+		},
+		{
+			"name": "004 - Site D",
+			"enrolled": 0,
+			"treated": 0,
+			"fpe": "-",
+			"lpe": "-",
+			"dag": "003__site_d"
 		}
 	]
 }
