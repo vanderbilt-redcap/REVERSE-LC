@@ -272,10 +272,10 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			if ($screening_record->include_yn == '1' || $screening_record->incl_not_met___4 == '1') {
 				$total++;
 				$inclusionData[$dag]++;
-				if $this->isSiteDomestic($dag) {
+				if ($this->isSiteDomestic($dag)) {
 					$totalDomestic++;
 				}
-				if $this->isSiteInternational($dag) {
+				if ($this->isSiteInternational($dag)) {
 					$totalInternational++;
 				}
 			}
