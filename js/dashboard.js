@@ -71,11 +71,10 @@ function clickedFolder(clickEvent) {
 }
 
 function setLocalityFilter(locality) {
+	// hide/show site rows as appropriate
 	$("tr[data-dag]").each(function(i, e) {
 		var row = $(e);
-		if (locality == "Global") {
-			row.show();
-		} else if (row.attr('data-locality') == locality) {
+		if (locality == "Global" || row.attr('data-locality') == locality) {
 			row.show();
 		} else {
 			row.hide();

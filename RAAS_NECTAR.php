@@ -31,7 +31,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		'transfusion_datetime',
 		'randomization_date',
 		'randomization',
-		'transfusion_given',
 		'append_d_calc',
 		'append_e_calc',
 		'randomization_arm',
@@ -761,7 +760,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		$screening_log_data->rows[] = ["Grand Total", $total_screened, $total_screened];
 		return $screening_log_data;
 	}
-	// public function getEnrollmentChartData($site = null) {
 	public function getEnrollmentChartData($options = null) {
 		// determine earliest screened date (upon which weeks array will be based)
 		// 2021-08-05 we're changing to count "Randomized" instead of "Enrolled"
