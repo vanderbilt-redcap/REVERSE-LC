@@ -260,9 +260,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			$this->getScreeningData();
 		}
 		$inclusionData = [];
-		$totalDomestic = 0;
-		$totalInternational = 0;
-		$total = 0;
 		foreach ($this->screening_data as $screening_rid => $screening_record) {
 			$dag = $screening_record->redcap_data_access_group;
 			if (!isset($inclusionData[$dag])) {
@@ -272,18 +269,10 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			if ($screening_record->include_yn == '1' || $screening_record->incl_not_met___4 == '1') {
 				$total++;
 				$inclusionData[$dag]++;
-				if ($this->isSiteDomestic($dag)) {
-					$totalDomestic++;
-				}
-				if ($this->isSiteInternational($dag)) {
-					$totalInternational++;
-				}
 			}
 		}
 		
 		$inclusionData["_total"] = $total;
-		$inclusionData["_domestic"] = $totalDomestic;
-		$inclusionData["_international"] = $totalInternational;
 		
 		return $inclusionData;
 	}
@@ -550,7 +539,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				"name": "Currently Enrolled (Domestic)",
 				"fpe": "-",
 				"lpe": "-",
-				"screened": ' . $inclusionData['_domestic'] . ',
+				"screened": "0",
 				"eligible": "0",
 				"randomized": "0",
 				"treated": "0"
@@ -559,7 +548,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				"name": "Currently Enrolled (International)",
 				"fpe": "-",
 				"lpe": "-",
-				"screened": ' . $inclusionData['_international'] . ',
+				"screened": "0",
 				"eligible": "0",
 				"randomized": "0",
 				"treated": "0"
@@ -595,8 +584,10 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			
 			if ($this->isSiteDomestic($site->name)) {
 				$site->locality = 'Domestic';
+				$data->totals[2]->screened += $site->screened;
 			} elseif ($this->isSiteInternational($site->name)) {
 				$site->locality = 'International';
+				$data->totals[3]->screened += $site->screened;
 			}
 			
 			// // update columns using patient data
