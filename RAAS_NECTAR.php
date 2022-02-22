@@ -273,12 +273,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$total++;
 				$inclusionData[$dag]++;
 			}
-			
-			// if ($this->isSiteDomestic($) {
-				// $totalDomestic++;
-			// } elseif (international) {
-				// $totalInternational++;
-			// }
 		}
 		
 		$inclusionData["_total"] = $total;
@@ -304,11 +298,20 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			$this->regulatory_data['domestic_sites'] = [];
 			$this->regulatory_data['international_sites'] = [];
 			
+			$this->regulatory_data['domestic_dag_ids'] = [];
+			$this->regulatory_data['international_dag_ids'] = [];
+			
 			foreach ($this->regulatory_data as $reg_record) {
 				if ($reg_record->site_international == '1') {
-					$this->regulatory_data['domestic_sites'][] = $reg_record->record_id;
-				} elseif ($reg_record->site_international == '0') {
 					$this->regulatory_data['international_sites'][] = $reg_record->record_id;
+					if (!empty($reg_record->edc_dag_id)) {
+						$this->regulatory_data['international_dag_ids'][] = $reg_record->edc_dag_id;
+					}
+				} elseif ($reg_record->site_international == '0') {
+					$this->regulatory_data['domestic_sites'][] = $reg_record->record_id;
+					if (!empty($reg_record->edc_dag_id)) {
+						$this->regulatory_data['domestic_dag_ids'][] = $reg_record->edc_dag_id;
+					}
 				}
 			}
         }
@@ -337,12 +340,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		
 		$reg_data = $this->getRegulatoryData();
 		
-		if (isset($_GET['TESTING'])) {
-			if ($filtered_site_arg === 'siteb') {
-				return true;
-			}
-		}
-		
 		foreach ($reg_data['domestic_sites'] as $site_name) {
 			$filtered_site_name = preg_replace("/[^a-z]/", "", strtolower($site_name));
 			if ($filtered_site_name === $filtered_site_arg) {
@@ -355,12 +352,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		$filtered_site_arg = preg_replace("/[^a-z]/", "", strtolower($site_name_arg));
 		
 		$reg_data = $this->getRegulatoryData();
-		
-		if (isset($_GET['TESTING'])) {
-			if ($filtered_site_arg === 'sitec') {
-				return true;
-			}
-		}
 		
 		foreach ($reg_data['international_sites'] as $site_name) {
 			$filtered_site_name = preg_replace("/[^a-z]/", "", strtolower($site_name));
@@ -776,9 +767,9 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		$first_date = date("Y-m-d");
 		$last_date = date("Y-m-d", 0);
 		foreach ($all_enroll_data as $record) {
-			if ($site_locality == "Domestic" and $this->isSiteDomestic($record->redcap_data_access_group) === false) {
+			if ($site_locality == "Domestic" and $this->isSiteDomestic($record->dag_name) === false) {
 				continue;
-			} elseif ($site_locality == "International" and $this->isSiteInternational($record->redcap_data_access_group) === false) {
+			} elseif ($site_locality == "International" and $this->isSiteInternational($record->dag_name) === false) {
 				continue;
 			}
 			
