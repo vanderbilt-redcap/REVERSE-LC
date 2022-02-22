@@ -559,7 +559,8 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				"treated": "0"
 			}
 		]');
-		$data->sites = [];
+		$data->domestic_sites = [];
+		$data->international_sites = [];
 		
 		// create temporary sites container
 		$sites = new \stdClass();
@@ -654,7 +655,12 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		// site objects updated with patient data, dump into $data->sites
 		// effectively removing keys and keeping values in array
 		foreach ($sites as $site) {
-			$data->sites[] = $site;
+			if ($site->locality == 'Domestic') {
+				$data->domestic_sites[] = $site;
+			} elseif ($site->locality == 'International') {
+				$data->international_sites[] = $site;
+			}
+			
 		}
 		
 		// sort all sites, randomized descending
