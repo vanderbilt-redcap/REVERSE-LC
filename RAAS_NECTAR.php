@@ -272,6 +272,12 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			if ($screening_record->include_yn == '1' || $screening_record->incl_not_met___4 == '1') {
 				$total++;
 				$inclusionData[$dag]++;
+				if $this->isSiteDomestic($dag) {
+					$totalDomestic++;
+				}
+				if $this->isSiteInternational($dag) {
+					$totalInternational++;
+				}
 			}
 		}
 		
@@ -544,7 +550,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				"name": "Currently Enrolled (Domestic)",
 				"fpe": "-",
 				"lpe": "-",
-				"screened": ' . count($reg_data["domestic_sites"]) . ',
+				"screened": ' . $inclusionData['_domestic'] . ',
 				"eligible": "0",
 				"randomized": "0",
 				"treated": "0"
@@ -553,7 +559,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				"name": "Currently Enrolled (International)",
 				"fpe": "-",
 				"lpe": "-",
-				"screened": ' . count($reg_data["international_sites"]) . ',
+				"screened": ' . $inclusionData['_international'] . ',
 				"eligible": "0",
 				"randomized": "0",
 				"treated": "0"
