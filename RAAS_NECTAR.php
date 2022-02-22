@@ -584,10 +584,8 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			
 			if ($this->isSiteDomestic($site->name)) {
 				$site->locality = 'Domestic';
-				$data->totals[2]->screened += $site->screened;
 			} elseif ($this->isSiteInternational($site->name)) {
 				$site->locality = 'International';
-				$data->totals[3]->screened += $site->screened;
 			}
 			
 			// // update columns using patient data
@@ -654,8 +652,10 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		foreach ($sites as $site) {
 			if ($site->locality == 'Domestic') {
 				$data->domestic_sites[] = $site;
+				$data->totals[2]->screened += $site->screened;
 			} elseif ($site->locality == 'International') {
 				$data->international_sites[] = $site;
+				$data->totals[3]->screened += $site->screened;
 			}
 			
 		}
