@@ -331,14 +331,14 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 	}
 	public function isSiteDomestic($dag_group_id) {
 		$reg_data = $this->getRegulatoryData();
-		if (array_search($reg_data['domestic_dag_ids'], $dag_group_id)) {
+		if (array_search($dag_group_id, $reg_data['domestic_dag_ids']) !== false) {
 			return true;
 		}
 		return false;
 	}
 	public function isSiteInternational($dag_group_id) {
 		$reg_data = $this->getRegulatoryData();
-		if (array_search($reg_data['international_dag_ids'], $dag_group_id)) {
+		if (array_search($dag_group_id, $reg_data['international_dag_ids']) !== false) {
 			return true;
 		}
 		return false;
