@@ -330,29 +330,17 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		
 		return $this->user;
 	}
-	public function isSiteDomestic($site_name_arg) {
-		$filtered_site_arg = preg_replace("/[^a-z]/", "", strtolower($site_name_arg));
-		
+	public function isSiteDomestic($dag_group_id) {
 		$reg_data = $this->getRegulatoryData();
-		
-		foreach ($reg_data['domestic_sites'] as $site_name) {
-			$filtered_site_name = preg_replace("/[^a-z]/", "", strtolower($site_name));
-			if ($filtered_site_name === $filtered_site_arg) {
-				return true;
-			}
+		if (array_search($reg_data['domestic_dag_ids'], $dag_group_id)) {
+			return true;
 		}
 		return false;
 	}
-	public function isSiteInternational($site_name_arg) {
-		$filtered_site_arg = preg_replace("/[^a-z]/", "", strtolower($site_name_arg));
-		
+	public function isSiteInternational($dag_group_id) {
 		$reg_data = $this->getRegulatoryData();
-		
-		foreach ($reg_data['international_sites'] as $site_name) {
-			$filtered_site_name = preg_replace("/[^a-z]/", "", strtolower($site_name));
-			if ($filtered_site_name === $filtered_site_arg) {
-				return true;
-			}
+		if (array_search($reg_data['international_dag_ids'], $dag_group_id)) {
+			return true;
 		}
 		return false;
 	}
@@ -569,6 +557,8 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$site = $sites->$patient_dag;
 				$site->name = $record->dag_name;
 				$site->dag = $record->redcap_data_access_group;
+				$site->group_id = $record->dag;
+				
 				$site->fpe = '-';
 				$site->lpe = '-';
 				
@@ -580,11 +570,12 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$site->eligible = 0;
 				$site->randomized = 0;
 				$site->treated = 0;
+				
 			}
 			
-			if ($this->isSiteDomestic($site->name)) {
+			if ($this->isSiteDomestic($site->group_id)) {
 				$site->locality = 'Domestic';
-			} elseif ($this->isSiteInternational($site->name)) {
+			} elseif ($this->isSiteInternational($site->group_id)) {
 				$site->locality = 'International';
 			}
 			
@@ -770,9 +761,9 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		$first_date = date("Y-m-d");
 		$last_date = date("Y-m-d", 0);
 		foreach ($all_enroll_data as $record) {
-			if ($site_locality == "Domestic" and $this->isSiteDomestic($record->dag_name) === false) {
+			if ($site_locality == "Domestic" and $this->isSiteDomestic($record->dag) === false) {
 				continue;
-			} elseif ($site_locality == "International" and $this->isSiteInternational($record->dag_name) === false) {
+			} elseif ($site_locality == "International" and $this->isSiteInternational($record->dag) === false) {
 				continue;
 			}
 			
