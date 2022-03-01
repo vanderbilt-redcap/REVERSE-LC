@@ -555,6 +555,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		]');
 		$data->domestic_sites = [];
 		$data->international_sites = [];
+		$data->sites_no_locality = [];
 		
 		// create temporary sites container
 		$sites = new \stdClass();
@@ -588,6 +589,8 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$site->locality = 'Domestic';
 			} elseif ($this->isSiteInternational($site->name)) {
 				$site->locality = 'International';
+			} else {
+				$data->sites_no_locality[] = $site->name;
 			}
 			
 			// // update columns using patient data
@@ -670,7 +673,8 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				return $a->randomized < $b->randomized ? 1 : -1;
 			}
 		}
-		uasort($data->sites, __NAMESPACE__ . '\sortAllSitesData');
+		uasort($data->domestic_sites, __NAMESPACE__ . '\sortAllSitesData');
+		uasort($data->international_sites, __NAMESPACE__ . '\sortAllSitesData');
 		
 		// return
 		$this->all_sites_data = $data;
