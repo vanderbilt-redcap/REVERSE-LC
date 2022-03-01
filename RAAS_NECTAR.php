@@ -582,15 +582,14 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$site->eligible = 0;
 				$site->randomized = 0;
 				$site->treated = 0;
-				
-			}
 			
-			if ($this->isSiteDomestic($site->name)) {
-				$site->locality = 'Domestic';
-			} elseif ($this->isSiteInternational($site->name)) {
-				$site->locality = 'International';
-			} else {
-				$data->sites_no_locality[] = $site->name;
+				if ($this->isSiteDomestic($site->name)) {
+					$site->locality = 'Domestic';
+				} elseif ($this->isSiteInternational($site->name)) {
+					$site->locality = 'International';
+				} else {
+					$data->sites_no_locality[] = $site->name;
+				}
 			}
 			
 			// // update columns using patient data
