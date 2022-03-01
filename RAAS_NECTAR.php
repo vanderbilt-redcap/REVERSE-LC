@@ -255,7 +255,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 
         return $this->screening_data;
     }
-	private function getInclusionData() {
+	public function getInclusionData() {
 		if (!$this->screening_data) {
 			$this->getScreeningData();
 		}
@@ -310,7 +310,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				}
 			}
         }
-
         return $this->regulatory_data;
 	}
 	public function getUser() {
