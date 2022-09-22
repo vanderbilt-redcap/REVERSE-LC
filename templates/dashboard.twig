@@ -830,16 +830,7 @@
 					borderWidth: 1,
 					barPercentage: 1,
 					datalabels: {
-						{% if loop.last %}
-						display: true,
-						formatter: function(context, chart_obj) {
-							console.log(context);
-							console.log(chart_obj);
-							return data2[chart_obj.dataIndex];
-						}
-						{% else %}
 						display: false
-						{% endif %}
 					},
 					stack: 1
 				},
