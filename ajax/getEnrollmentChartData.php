@@ -3,7 +3,7 @@
 $options = [];
 
 // determine site_dag option
-if (isset($_POST['site_dag'])) {
+if (isset($_POST['site_dag']) && !empty($_POST['site_dag'])) {
 	// allow, -()*, alphanum and space in site/dag name
 	// $options['site_dag'] = trim(preg_replace("/[^A-Za-z0-9 \-\(\)*]/", "", $_POST['site_dag']));
 	$options['site_dag'] = $_POST['site_dag'];

@@ -206,7 +206,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
                 $project_id = $_GET['pid'];
             }
 			$this->getEventIDs();
-			
 			$params = [
 				'project_id' => $project_id,
 				'return_format' => 'json',
@@ -215,7 +214,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
                 'exportDataAccessGroups' => true
 			];
 			$edc_data = json_decode(\REDCap::getData($params));
-
+   
 			$projectDags = $this->getDAGs($project_id);
 
 			// add dag and dag_name property to each record
@@ -228,7 +227,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
                     }
                 }
 			}
-
 			$this->edc_data = $edc_data;
 		}
 		
@@ -249,7 +247,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
             ]));
 			
 			$screeningProject = new \Project($screeningProjectId);
-			preg_match_all("/<li>(.+)$/m", $screeningProject->metadata['excl_desc_2']['element_label'], $labels);
+			preg_match_all("/<li>(.+)$/m", $screeningProject->metadata['excl_desc_4']['element_label'], $labels);
 			$this->excl_desc_labels = $labels[1];
         }
 
@@ -388,7 +386,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
                 $project_id = $_GET['pid'];
             }
 			$this->getEDCData($project_id);
-			
 			// iterate over edc_data, collating data into record objects
 			$temp_records_obj = new \stdClass();
 			foreach ($this->edc_data as $record_event) {
@@ -498,7 +495,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		}
 		$this->getDAGs();
 		$this->getRecords();
-		
 		$inclusionData = $this->getInclusionData();
 		$reg_data = $this->getRegulatoryData();
 		
@@ -598,7 +594,12 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				}
 			}
 			// Eligible
-			if ($record->append_d_calc == 1 || $record->append_e_calc == 1) {
+            //f_calc or g_calc as well
+			if ($record->append_d_calc == 1 ||
+                $record->append_e_calc == 1 ||
+                $record->append_f_calc == 1 ||
+                $record->append_g_calc == 1
+            ) {
 				$data->totals[1]->eligible++;
 				$site->eligible++;
 				
@@ -621,12 +622,50 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			}
 			// Treated
 			if (
-				$record->sda_a1d1 != '' ||
-				$record->sda_a1d2 != '' ||
-				$record->sda_a1d3 != '' ||
-				$record->sda_a1d4 != '' ||
-				$record->sda_a1d5 != '' ||
-				$record->sda_a3d1 != ''
+                $record->sda_a1d1 == '1' ||
+                $record->sda_a1d2 == '1' ||
+                $record->sda_a1d3 == '1' ||
+                $record->sda_a1d4 == '1' ||
+                $record->sda_a1d5 == '1' ||
+                $record->sda_a3d1 == '1' ||
+                $record->sda_given_a3d1 == '1' ||
+                $record->sda_given_a3d2 == '1' ||
+                $record->sda_given_a3d3 == '1' ||
+                $record->sda_given_a3d4 == '1' ||
+                $record->sda_given_a3d5 == '1' ||
+                $record->sda_given_a3d6 == '1' ||
+                $record->sda_given_a3d7 == '1' ||
+                $record->sda_given_a3d8 == '1' ||
+                $record->sda_given_a3d9 == '1' ||
+                $record->sda_given_a3d10 == '1' ||
+                $record->sda_given_a3d11 == '1' ||
+                $record->sda_given_a3d12 == '1' ||
+                $record->sda_given_a3d13 == '1' ||
+                $record->sda_given_a3d14 == '1' ||
+                $record->sda_given_a3d15 == '1' ||
+                $record->sda_given_a3d16 == '1' ||
+                $record->sda_given_a3d17 == '1' ||
+                $record->sda_given_a3d18 == '1' ||
+                $record->sda_given_a3d19 == '1' ||
+                $record->sda_given_a3d20 == '1' ||
+                $record->sda_given_a3d21 == '1' ||
+                $record->sda_given_a3d22 == '1' ||
+                $record->sda_given_a3d23 == '1' ||
+                $record->sda_given_a3d24 == '1' ||
+                $record->sda_given_a3d25 == '1' ||
+                $record->sda_given_a3d26 == '1' ||
+                $record->sda_given_a3d27 == '1' ||
+                $record->sda_given_a3d28 == '1' ||
+                $record->sda_a4d1 == '1' ||
+                $record->sda_a4d2 == '1' ||
+                $record->sda_a4d3 == '1' ||
+                $record->sda_a4d4 == '1' ||
+                $record->sda_a4d5 == '1' ||
+                $record->sda_a4d6 == '1' ||
+                $record->sda_a4d7 == '1' ||
+                $record->sda_a4d8 == '1' ||
+                $record->sda_a4d9 == '1' ||
+                $record->sda_a4d10 == '1'
 			) {
 				$data->totals[1]->treated++;
 				$site->treated++;
@@ -716,7 +755,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			$date2 = date("Y-m-d", strtotime("+$day_offset2 days", strtotime($first_monday)));
 			
 			$row = [];
-			$row[0] = date("n/j", strtotime($date1)) . "-" . date("n/j", strtotime($date2));
+			$row[0] = date("n/j/y", strtotime($date1)) . "-" . date("n/j/y", strtotime($date2));
 			$row[0] = str_replace("\\", "", $row[0]);
 			
 			// count records that were screened this week
@@ -757,8 +796,8 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		if (isset($options['site_locality'])) {
 			$site_locality = $options['site_locality'];
 		}
-		
 		$all_enroll_data = $this->getEDCData();
+        $randArmlabels = $this->getFieldLabelMapping('randomization_arm');
 		$enroll_data_to_consider = [];
 		$first_date = date("Y-m-d");
 		$last_date = date("Y-m-d", 0);
@@ -790,10 +829,11 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		$enrollment_chart_data = new \stdClass();
 		$enrollment_chart_data->rows = [];
 		$cumulative_randomized = 0;
+        $cumulative_arms = array_fill_keys($randArmlabels, 0);
 		$iterations = 0;
 		while (true) {
 			$randomized_this_week = 0;
-			
+			$arms_this_week = array_fill_keys($randArmlabels, 0);
 			// determine week boundary dates
 			$day_offset1 = ($iterations) * 7;
 			$day_offset2 = $day_offset1 + 6;
@@ -801,7 +841,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			$date2 = date("Y-m-d", strtotime("+$day_offset2 days", strtotime($first_sunday)));
 			
 			$row = [];
-			$row[0] = date("n/j", strtotime($date1)) . "-" . date("n/j", strtotime($date2));
+			$row[0] = date("n/j/y", strtotime($date1)) . "-" . date("n/j/y", strtotime($date2));
 			$row[0] = str_replace("\\", "", $row[0]);
 			
 			// count records that were screened this week
@@ -812,14 +852,22 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				// making sure the H:m part of the d-m-Y H:m field doesn't cause us to miscount
 				$ts_x = strtotime(date("Y-m-d", strtotime($record->randomization_date)));
 				$site_match_or_null = $site === null ? true : $record->redcap_data_access_group == $site;
-				if ($ts_a <= $ts_x and $ts_x <= $ts_b and $site_match_or_null)
-					$randomized_this_week++;
+				if ($ts_a <= $ts_x and $ts_x <= $ts_b and $site_match_or_null) {
+                    $randomized_this_week++;
+                    $arms_this_week[$randArmlabels[$record->randomization_arm]]++;
+                }
 			}
+            foreach ($cumulative_arms as $arm => $total) {
+                $cumulative_arms[$arm] += $arms_this_week[$arm];
+                if ($cumulative_arms[$arm] === 0) {
+                    $cumulative_arms[$arm] = null;
+                }
+            }
 			$cumulative_randomized += $randomized_this_week;
 			
 			$row[1] = $randomized_this_week;
 			$row[2] = $cumulative_randomized;
-			
+			$row[3] = $cumulative_arms;
 			$enrollment_chart_data->rows[] = $row;
 			
 			$iterations++;
@@ -830,7 +878,9 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			if ($cutoff_timestamp > strtotime($last_date) or $iterations > 999)
 				break;
 		}
-		$enrollment_chart_data->rows[] = ["Grand Total", $cumulative_randomized, $cumulative_randomized];
+        $cumulative_arms = array_filter($cumulative_arms);
+		$enrollment_chart_data->rows[] = ["Grand Total", $cumulative_randomized, $cumulative_randomized, $cumulative_arms];
+  
 		return $enrollment_chart_data;
 	}
 	public function getExclusionReportData() {
@@ -909,6 +959,33 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 							case 21:
 								$report_table_index = 7;
 								break;
+                            case 22:
+                                $report_table_index = 1;
+                                break;
+                            case 23:
+                                $report_table_index = 2;
+                                break;
+                            case 24:
+                                $report_table_index = 3;
+                                break;
+                            case 25:
+                                $report_table_index = 4;
+                                break;
+                            case 26:
+                                $report_table_index = 5;
+                                break;
+                            case 27:
+                                $report_table_index = 6;
+                                break;
+                            case 28:
+                                $report_table_index = 7;
+                                break;
+                            case 29:
+                                $report_table_index = 8;
+                                break;
+                            case 30:
+                                $report_table_index = 9;
+                                break;
 						}
 					}
 					

@@ -784,44 +784,67 @@
 
 {# enrollment chart js script below: #}
 <script>
-	var week_labels = [
-		{% for row in enrollmentChart.rows|slice(0,-1) %}
-			'{{ row.0 }}',
-		{% endfor %}
-	];
-	var data1 = [
-		{% for row in enrollmentChart.rows|slice(0,-1) %}
-			{{ row.1 }},
-		{% endfor %}
-	];
-	var data2 = [
-		{% for row in enrollmentChart.rows|slice(0,-1) %}
-			{{ row.2 }},
-		{% endfor %}
-	];
+	var week_labels = ['{{  enrollmentChart.rows|column(0)|slice(0,-1)|join("','")|raw }}'];
+	var data1 = [{{  enrollmentChart.rows|column(1)|slice(0,-1)|join(",")|raw }}];
+	var data2 = [{{  enrollmentChart.rows|column(2)|slice(0,-1)|join(",")|raw }}];
+	var emptyData = Array(data2.length).fill('');
+
 	var ctx = document.getElementById('enrollment_chart').getContext('2d');
+
+	var colors = [
+		'rgb(125,180,216)',
+		'rgba(5,88,119)',
+		'rgb(36,167,162)',
+		'rgba(140,246,192)',
+		'rgb(154,161,184)'
+	];
+	function calculate(i) {
+		return (data1[i] / data2[i] * 100)
+	}
 	var enrollment_chart = new Chart(ctx, {
 		type: 'bar',
 		data: {
 			labels: week_labels,
-			datasets: [{
-				label: 'Participants Enrolled',
-				data: data1,
-				borderColor: 'rgba(13, 127, 133, 1)',
-				borderWidth: 2,
-				type: 'line',
-				datalabels: {
-					anchor: 'center'
-				}
-			},{
-				label: 'Cumulative Enrollments',
-				data: data2,
-				backgroundColor: 'rgba(180, 199, 231, 1)',
-				borderWidth: 1,
-				datalabels: {
-					offset: 12
-				}
-			}]
+			datasets: [
+				{
+					label: 'Participants Enrolled',
+					data: data1,
+					borderColor: 'rgba(13, 127, 133, 1)',
+					borderWidth: 2,
+					type: 'line',
+					datalabels: {
+						anchor: 'center',
+						// color: 'rgb(207,210,211)',
+						backgroundColor: 'rgba(229, 229, 229, .75)',
+						borderColor: 'rgba(13, 127, 133, 1)',
+						borderRadius: 2,
+						borderWidth: 2,
+						padding: 2
+					}
+				},
+				{% for label in randArmLabels %}
+				{
+					label: '{{ label }}',
+					data: [{{ enrollmentChart.rows|column(3)|slice(0,-1)|column(label)|join(',') }}],
+					backgroundColor: colors[{{ loop.index0 }}],
+					borderWidth: 1,
+					barPercentage: 1,
+					datalabels: {
+						{% if loop.last %}
+						display: true,
+						formatter: function(context, chart_obj) {
+							console.log(context);
+							console.log(chart_obj);
+							return data2[chart_obj.dataIndex];
+						}
+						{% else %}
+						display: false
+						{% endif %}
+					},
+					stack: 1
+				},
+				{% endfor %}
+			]
 		},
 		options: {
 			title: {
@@ -831,16 +854,84 @@
 				text: 'Enrollments By Week'
 			},
 			scales: {
+				xAxes: [{
+						stacked: true
+					}],
 				yAxes: [{
+					stacked: true,
 					ticks: {
 						beginAtZero: true
 					}
 				}]
+			},
+			tooltips:{
+				mode: 'label',
+				callbacks: {
+					label: function(tooltipItem, data) {
+						var dataset = data.datasets[tooltipItem.datasetIndex];
+						// console.log(dataset);
+						var arm = dataset.label;
+						var total = dataset.data[tooltipItem.index];
+						var cumulative = 0;
+						for (var i = 1; i <= tooltipItem.datasetIndex;i++) {
+							cumulative += data.datasets[i].data[tooltipItem.index];
+						}
+						// var cumulative = data2[tooltipItem.index];
+						var lastVisible = data.datasets.length - 1;
+						for (var i = data.datasets.length - 1; i >= 0 ;i--) {
+							if (enrollment_chart.isDatasetVisible(i)) {
+								lastVisible = i;
+								break;
+							}
+						}
+						// If it is not the last dataset, you display it as you usually do
+						if (tooltipItem.datasetIndex != lastVisible) {
+							if (total === undefined) {
+								return '';
+							}
+							return arm + " : " + total;
+						} else { // .. else, you display the dataset and the total, using an array
+							if (total === undefined) {
+								return "Cumulative Enrollments : " + cumulative;
+							}
+							return [arm + " : " + total, "Cumulative Enrollments : " + cumulative];
+						}
+					}
+				}
+			},
+			legend: {
+				labels: {
+					filter: function(item, chart) {
+						// Logic to remove a particular legend item goes here
+						return !item.text.includes('Cumulative Enrollments');
+					}
+				},
+				onClick: {} //disable default legend click behavior
 			},
 			responsive: true,
 			responsiveAnimationDuration: 50,
 			maintainAspectRatio: false
 		}
 	});
+	{# TODO Keep cumulative dataset but completely hide it from the user apart from in tooltips. #}
+	// function chartOnClick(event, legendItem) {
+	// 	console.log(event, legendItem);
+	// 	let chart = enrollment_chart;
+	// 	const points = chart.getElementsAtEventForMode(event, 'nearest', {}, true);
+	// 	console.log(points);
+	// 	//
+	// 	if (points.length) {
+	// 		const firstPoint = points[0];
+	// 		//var label = myChart.data.labels[firstPoint.index];
+	// 		//var value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];
+	// 		let datasetIndex = firstPoint.datasetIndex, index = firstPoint.index;
+	//
+	// 		if (firstPoint.element.hidden != true) {
+	// 			chart.hide(datasetIndex, index);
+	// 		} else {
+	// 			chart.show(datasetIndex, index);
+	// 		}
+	// 	}
+	// }
 </script>
 {% endblock %}

@@ -5,7 +5,6 @@ $loader = new \Twig\Loader\FilesystemLoader(__DIR__."/templates");
 $twig = new \Twig\Environment($loader);
 
 $template = $twig->load("dashboard.twig");
-
 /** @var $module \Vanderbilt\RAAS_NECTAR\RAAS_NECTAR */
 $allSitesData = $module->getAllSitesData();
 $mySitesData = $module->getMySiteData();
@@ -22,7 +21,7 @@ if ($authorized == 3) {
 } else {
 	$site_names[] = $module->user->dag_group_name;
 }
-
+$randArmlabels = $module->getFieldLabelMapping('randomization_arm');
 $screeningLogData = $module->getScreeningLogData();
 $enrollmentChartData = $module->getEnrollmentChartData();
 $exclusionData = $module->getExclusionReportData();
@@ -32,7 +31,8 @@ $folderImageSource = $module->getUrl("images/folder.png");
 $helpfulLinks = $module->getHelpfulLinks();
 $helpfulLinkFolders = $module->getHelpfulLinkFolders();
 $siteCompletionData = $module->calculateSiteProgress($siteStartupData);
-
+$totals = array_keys(end($enrollmentChartData->rows)[3]);
+$randArmlabels = array_intersect($randArmlabels, $totals);
 echo $template->render([
 	"allSites" => $allSitesData,
 	"mySite" => $mySitesData,
@@ -47,5 +47,6 @@ echo $template->render([
 	"clipboardImageSource" => $clipboardImageSource,
 	"folderImageSource" => $folderImageSource,
 	"siteStartupData" => $siteStartupData,
-    "siteCompletionData" => $siteCompletionData
+    "siteCompletionData" => $siteCompletionData,
+    'randArmLabels' => $randArmlabels
 ]);
