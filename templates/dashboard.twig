@@ -874,7 +874,9 @@
 						var total = dataset.data[tooltipItem.index];
 						var cumulative = 0;
 						for (var i = 1; i <= tooltipItem.datasetIndex;i++) {
-							cumulative += data.datasets[i].data[tooltipItem.index];
+							if (data.datasets[i].data[tooltipItem.index] !== undefined) {
+								cumulative += data.datasets[i].data[tooltipItem.index];
+							}
 						}
 						// var cumulative = data2[tooltipItem.index];
 						var lastVisible = data.datasets.length - 1;
