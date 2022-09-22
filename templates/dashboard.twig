@@ -859,7 +859,7 @@
 						var total = dataset.data[tooltipItem.index];
 						var cumulative = 0;
 						for (var i = 1; i <= tooltipItem.datasetIndex;i++) {
-							if (data.datasets[i].data[tooltipItem.index] !== undefined) {
+							if (enrollment_chart.isDatasetVisible(i) && data.datasets[i].data[tooltipItem.index] !== undefined) {
 								cumulative += data.datasets[i].data[tooltipItem.index];
 							}
 						}
@@ -893,7 +893,7 @@
 						return !item.text.includes('Cumulative Enrollments');
 					}
 				},
-				onClick: {} //disable default legend click behavior
+				// onClick: {} //disable default legend click behavior
 			},
 			responsive: true,
 			responsiveAnimationDuration: 50,
