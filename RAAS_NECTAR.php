@@ -33,13 +33,53 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		'randomization',
 		'append_d_calc',
 		'append_e_calc',
+        'append_f_calc',
+        'append_g_calc',
 		'randomization_arm',
 		'sda_a1d1',
 		'sda_a1d2',
 		'sda_a1d3',
 		'sda_a1d4',
 		'sda_a1d5',
-		'sda_a3d1'
+		'sda_a3d1',
+        'sda_given_a3d1',
+        'sda_given_a3d2',
+        'sda_given_a3d3',
+        'sda_given_a3d4',
+        'sda_given_a3d5',
+        'sda_given_a3d6',
+        'sda_given_a3d7',
+        'sda_given_a3d8',
+        'sda_given_a3d9',
+        'sda_given_a3d10',
+        'sda_given_a3d11',
+        'sda_given_a3d12',
+        'sda_given_a3d13',
+        'sda_given_a3d14',
+        'sda_given_a3d15',
+        'sda_given_a3d16',
+        'sda_given_a3d17',
+        'sda_given_a3d18',
+        'sda_given_a3d19',
+        'sda_given_a3d20',
+        'sda_given_a3d21',
+        'sda_given_a3d22',
+        'sda_given_a3d23',
+        'sda_given_a3d24',
+        'sda_given_a3d25',
+        'sda_given_a3d26',
+        'sda_given_a3d27',
+        'sda_given_a3d28',
+        'sda_a4d1',
+        'sda_a4d2',
+        'sda_a4d3',
+        'sda_a4d4',
+        'sda_a4d5',
+        'sda_a4d6',
+        'sda_a4d7',
+        'sda_a4d8',
+        'sda_a4d9',
+        'sda_a4d10'
 	];
 	public $personnel_roles = [
 		'PI',
@@ -594,7 +634,6 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				}
 			}
 			// Eligible
-            //f_calc or g_calc as well
 			if ($record->append_d_calc == 1 ||
                 $record->append_e_calc == 1 ||
                 $record->append_f_calc == 1 ||
