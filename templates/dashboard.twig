@@ -55,11 +55,13 @@
 							<th>Eligible</th>
 							<th>Randomized</th>
 							<th>Treated</th>
+							<th>Fostamatinib</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr class="first_row">
 							<td>Entire Project</td>
+							<td></td>
 							<td></td>
 							<td></td>
 							<td></td>
@@ -78,11 +80,13 @@
 								<td>{{ totalDetails["eligible"] }}</td>
 								<td>{{ totalDetails["randomized"] }}</td>
 								<td>{{ totalDetails["treated"] }}</td>
+								<td>{{ totalDetails["fostamatinib"] }}</td>
 							</tr>
 						{% endfor %}
 						<tr class="first_row">
 							<td>By Site</td>
 							<td>(Domestic)</td>
+							<td></td>
 							<td></td>
 							<td></td>
 							<td></td>
@@ -100,11 +104,13 @@
 								<td>{{ siteDetails["eligible"] }}</td>
 								<td>{{ siteDetails["randomized"] }}</td>
 								<td>{{ siteDetails["treated"] }}</td>
+								<td>{{ siteDetails["fostamatinib"] }}</td>
 							</tr>
 						{% endfor %}
 						<tr class="first_row">
 							<td>By Site</td>
 							<td>(International)</td>
+							<td></td>
 							<td></td>
 							<td></td>
 							<td></td>
@@ -122,6 +128,7 @@
 								<td>{{ siteDetails["eligible"] }}</td>
 								<td>{{ siteDetails["randomized"] }}</td>
 								<td>{{ siteDetails["treated"] }}</td>
+								<td>{{ siteDetails["fostamatinib"] }}</td>
 							</tr>
 						{% endfor %}
 					</tbody>

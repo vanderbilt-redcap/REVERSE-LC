@@ -547,6 +547,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				"screened": "-",
 				"eligible": "-",
 				"randomized": 1600,
+				"fostamatinib": "0",
 				"treated": 1600
 			},
 			{
@@ -556,6 +557,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				"screened": ' . $inclusionData['_total'] . ',
 				"eligible": "0",
 				"randomized": "0",
+				"fostamatinib": "0",
 				"treated": "0"
 			},
 			{
@@ -565,6 +567,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				"screened": "0",
 				"eligible": "0",
 				"randomized": "0",
+				"fostamatinib": "0",
 				"treated": "0"
 			},
 			{
@@ -574,6 +577,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				"screened": "0",
 				"eligible": "0",
 				"randomized": "0",
+				"fostamatinib": "0",
 				"treated": "0"
 			}
 		]');
@@ -605,6 +609,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				
 				$site->eligible = 0;
 				$site->randomized = 0;
+                $site->fostamatinib = 0;
 				$site->treated = 0;
 			
 				if ($this->isSiteDomestic($site->group_id)) {
@@ -651,12 +656,22 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 			// Randomized
 			if ($record->randomization_arm != '') {
 				$data->totals[1]->randomized++;
+    
 				$site->randomized++;
-				
+                if ($record->randomization_arm === "Fostamatinib") {
+                    $data->totals[1]->fostamatinib++;
+                    $site->fostamatinib++;
+                }
 				if ($site->locality == 'Domestic') {
 					$data->totals[2]->randomized++;
+                    if ($record->randomization_arm === "Fostamatinib") {
+                        $data->totals[2]->fostamatinib++;
+                    }
 				} elseif ($site->locality == 'International') {
 					$data->totals[3]->randomized++;
+                    if ($record->randomization_arm === "Fostamatinib") {
+                        $data->totals[3]->fostamatinib++;
+                    }
 				}
 			}
 			// Treated
