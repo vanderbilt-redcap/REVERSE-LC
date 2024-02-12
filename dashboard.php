@@ -31,7 +31,7 @@ $folderImageSource = $module->getUrl("images/folder.png");
 $helpfulLinks = $module->getHelpfulLinks();
 $helpfulLinkFolders = $module->getHelpfulLinkFolders();
 $siteCompletionData = $module->calculateSiteProgress($siteStartupData);
-$totals = array_keys(end($enrollmentChartData->rows)[3]);
+$totals = array_keys(end($enrollmentChartData->rows)[3] ?? []);
 $randArmlabels = array_intersect($randArmlabels, $totals);
 echo $template->render([
 	"allSites" => $allSitesData,

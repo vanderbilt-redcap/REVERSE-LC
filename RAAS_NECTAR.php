@@ -852,6 +852,9 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		}
 		$all_enroll_data = $this->getEDCData();
         $randArmlabels = $this->getFieldLabelMapping('randomization_arm');
+		if(is_bool($randArmlabels)){
+			$randArmlabels = [];
+		}
 		$enroll_data_to_consider = [];
 		$first_date = date("Y-m-d");
 		$last_date = date("Y-m-d", 0);
