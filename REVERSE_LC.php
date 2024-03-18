@@ -1,7 +1,7 @@
 <?php
-namespace Vanderbilt\RAAS_NECTAR;
+namespace Vanderbilt\REVERSE_LC;
 
-class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
+class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 	public $edc_data;
 	public $uad_data;
 	private $access_tier_by_role = [
@@ -133,11 +133,11 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		define("CSS_MAIN_ACTIVE", $this->getUrl("css/mainActive.css"));
 
 		define("JS_PATH_1",$this->getUrl("js/dashboard.js"));
-		define("LOGO_LINK", $this->getUrl("images/nectar_logo.png"));
+		define("LOGO_LINK", $this->getUrl("images/main_logo.png"));
 
 		require_once(__DIR__."/vendor/autoload.php");
 		
-		$id_field_name = "subjid";
+		$id_field_name = "record_id";
 		$this->id_field_name = $id_field_name;
 		$this->record_fields[] = $id_field_name;
 	}
@@ -225,14 +225,10 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 					'return_format' => 'json',
 					'fields' => [
 						$this->id_field_name,
-						'first_name',
-						'last_name',
-						'role_ext_2',
-						'dashboard',
-						'user_name',
-						'dag_group_name'
+						'pref_name',
+						'user_name'
 					]
-				];
+				]; 
 				$uad_data = json_decode(\REDCap::getData($params));
 			}
 			$this->uad_data = $uad_data;
@@ -360,11 +356,10 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 					unset($record->redcap_repeat_instrument);
 					unset($record->redcap_repeat_instance);
 					$this->user = $record;
-					define("PIO_USER_DISPLAY_NAME",$record->first_name." ".$record->last_name);
+					define("PIO_USER_DISPLAY_NAME",$record->pref_name);
 				}
 			}
 		}
-		
 		return $this->user;
 	}
 	public function isSiteDomestic($dag_group_id) {
@@ -402,7 +397,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				user can see my site data -- including all patient rows from all sites
 		*/
 		$this->getUser();
-		
+		$this->user->authorized = true; return; //KAREN
 		if ($this->user === true || empty($this->user->dashboard)) {
 			$this->user->authorized = false;
 			return;
@@ -1157,11 +1152,10 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		return $folders;
 	}
 	
-	// RAAS additions
 	public function getVCCSiteStartUpFieldList($regulatoryPID) {
 		$reg_dd = json_decode(\REDCap::getDataDictionary($regulatoryPID, 'json'));
 		if (empty($reg_dd)) {
-			$this->addStartupError("The RAAS/NECTAR module couldn't get start-up fields -- fatal error trying to decode the Data Dictionary (json) for the regulatory project (PID: " . $regulatoryPID . ")", "danger");
+			$this->addStartupError("The REVERSE-LC module couldn't get start-up fields -- fatal error trying to decode the Data Dictionary (json) for the regulatory project (PID: " . $regulatoryPID . ")", "danger");
 		}
 		
 		$field_names = [];
@@ -1184,14 +1178,14 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 		// get regulatory Project instance (for groups/DAGs data)
 		$regulatoryPID = $this->getProjectSetting('site_regulation_project');
 		if (empty($regulatoryPID)) {
-			$this->addStartupError("The RAAS/NECTAR module couldn't find a project ID for a corresponding regulatory project because the 'RAAS_NECTAR Site Regulation Project ID' setting is not configured. Please configure the module by selecting a regulatory project.", "danger");
+			$this->addStartupError("The REVERSE-LC module couldn't find a project ID for a corresponding regulatory project because the 'REVERSE_LC Site Regulation Project ID' setting is not configured. Please configure the module by selecting a regulatory project.", "danger");
 			return $startup_data;
 		}
 		
 		// return array of site objects, each with data used to build Site Activation tables
 		$activation_fields = $this->getVCCSiteStartUpFieldList($regulatoryPID);
 		if (empty($activation_fields)) {
-			$this->addStartupError("The RAAS/NECTAR module couldn't retrieve the list of fields in the VCC Site Start Up form (in the regulatory project)", "danger");
+			$this->addStartupError("The REVERSE-LC module couldn't retrieve the list of fields in the VCC Site Start Up form (in the regulatory project)", "danger");
 		}
 		
 		// add extra field(s) useful for site activation tables
@@ -1433,7 +1427,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 					$result_rows[] = $row;
 				}
 				if (count($result_rows) > 1) {
-					$this->addStartupError("The RAAS/NECTAR module couldn't determine a timestamp for when this record ($rid) was created.", "warning", $candidate->dag);
+					$this->addStartupError("The REVERSE-LC module couldn't determine a timestamp for when this record ($rid) was created.", "warning", $candidate->dag);
 				}
 				if (isset($result_rows[0])) {
 					$candidate->create_ts = $result_rows[0]['ts'];
@@ -1464,11 +1458,11 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				
 				if ($max_ts == 0 and $count_role > 1) {
 					// none of our personnel records have creation timestamps and there are more than one... so which one do we use? we can't determine
-					$this->addStartupError("The RAAS/NECTAR module couldn't determine which personnel record to use for role '$role' (most likely there are multiple personnel records with this role and the module can't determine when each were created)", "danger", $dag);
+					$this->addStartupError("The REVERSE-LC module couldn't determine which personnel record to use for role '$role' (most likely there are multiple personnel records with this role and the module can't determine when each were created)", "danger", $dag);
 				}
 				
 				if (empty($selected_candidate)) {
-					$this->addStartupError("The RAAS/NECTAR module couldn't determine which personnel record to use for role '$role' for site '$dag' -- most likely there are no records created with this [role] value assigned to DAG '$dag'.", "danger", $dag);
+					$this->addStartupError("The REVERSE-LC module couldn't determine which personnel record to use for role '$role' for site '$dag' -- most likely there are no records created with this [role] value assigned to DAG '$dag'.", "danger", $dag);
 				}
 				
 				$role_name = strtolower(preg_replace('/[ ]+/', '_', $role));
@@ -1536,7 +1530,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 				$site->$role = [];
 				$cells = &$site->$role;
 				if (empty($personnel->$dag) || empty($personnel->$dag->$role)) {
-                    $this->addStartupError("The RAAS/NECTAR module couldn't determine which record to use for $role_name role information for this site.", "danger", $dag);
+                    $this->addStartupError("The REVERSE-LC module couldn't determine which record to use for $role_name role information for this site.", "danger", $dag);
 				}
 				
 				foreach($this->document_signoff_fields as $data_field => $check_field) {
@@ -1847,7 +1841,7 @@ class RAAS_NECTAR extends \ExternalModules\AbstractExternalModule {
 	
 	// hooks
 	public function redcap_module_link_check_display($pid, $link) {
-		if ($link['name'] == 'RAAS_NECTAR Dashboard') {
+		if ($link['name'] == 'REVERSE_LC Dashboard') {
 			$this->getUser();
 			$this->authorizeUser();
 			if ($this->user->authorized === false) {

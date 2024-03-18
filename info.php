@@ -1,5 +1,5 @@
 <?php
-// http://localhost/redcap/redcap_v10.9.4/ExternalModules/?prefix=RAAS_NECTAR&page=info&pid=88
+// http://localhost/redcap/redcap_v10.9.4/ExternalModules/?prefix=REVERSE_LC&page=info&pid=88
 \REDCap::allowUsers([
 	"jolymm",
 	"griderj",
