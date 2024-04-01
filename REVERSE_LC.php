@@ -397,8 +397,13 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				user can see my site data -- including all patient rows from all sites
 		*/
 		$this->getUser();
+		
+		/** User roles and access level are still pending to define **/
+		$this->user->authorized = true; 
+		return;
+		/**********/
 
-		if ($this->user === true) {
+		if ($this->user === true || empty($this->user->dashboard)) {
 			$this->user->authorized = false;
 			return;
 		}
