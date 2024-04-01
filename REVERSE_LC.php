@@ -397,8 +397,8 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				user can see my site data -- including all patient rows from all sites
 		*/
 		$this->getUser();
-		$this->user->authorized = true; return; //KAREN
-		if ($this->user === true || empty($this->user->dashboard)) {
+
+		if ($this->user === true) {
 			$this->user->authorized = false;
 			return;
 		}
