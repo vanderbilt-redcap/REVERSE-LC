@@ -5,7 +5,7 @@ $loader = new \Twig\Loader\FilesystemLoader(__DIR__."/templates");
 $twig = new \Twig\Environment($loader);
 
 $template = $twig->load("dashboard.twig");
-/** @var $module \Vanderbilt\RAAS_NECTAR\RAAS_NECTAR */
+/** @var $module \Vanderbilt\REVERSE_LC\REVERSE_LC */
 $allSitesData = $module->getAllSitesData();
 $mySitesData = $module->getMySiteData();
 $siteStartupData = $module->getSiteStartupData();
@@ -21,32 +21,34 @@ if ($authorized == 3) {
 } else {
 	$site_names[] = $module->user->dag_group_name;
 }
-$randArmlabels = $module->getFieldLabelMapping('randomization_arm');
-$screeningLogData = $module->getScreeningLogData();
-$enrollmentChartData = $module->getEnrollmentChartData();
-$exclusionData = $module->getExclusionReportData();
-$screenFailData = $module->getScreenFailData();
+	
+$randArmlabels        = $module->getFieldLabelMapping('randomization');
+$screeningLogData     = $module->getScreeningLogData();
+$enrollmentChartData  = $module->getEnrollmentChartData();
+$exclusionData        = $module->getExclusionReportData();
+$screenFailData       = $module->getScreenFailData();
 $clipboardImageSource = $module->getUrl("images/clipboard.PNG");
-$folderImageSource = $module->getUrl("images/folder.png");
-$helpfulLinks = $module->getHelpfulLinks();
-$helpfulLinkFolders = $module->getHelpfulLinkFolders();
-$siteCompletionData = $module->calculateSiteProgress($siteStartupData);
-$totals = array_keys(end($enrollmentChartData->rows)[3] ?? []);
-$randArmlabels = array_intersect($randArmlabels, $totals);
+$folderImageSource    = $module->getUrl("images/folder.png");
+$helpfulLinks         = $module->getHelpfulLinks();
+$helpfulLinkFolders   = $module->getHelpfulLinkFolders();
+$siteCompletionData   = $module->calculateSiteProgress($siteStartupData);
+$totals               = array_keys(end($enrollmentChartData->rows)[3] ?? []);
+$randArmlabels        = array_intersect($randArmlabels, $totals);
+
 echo $template->render([
-	"allSites" => $allSitesData,
-	"mySite" => $mySitesData,
-	"authorized" => $authorized,
-	"site_names" => $site_names,
-	"screeningLog" => $screeningLogData,
-	"enrollmentChart" => $enrollmentChartData,
-	"exclusion" => $exclusionData,
-	"screenFail" => $screenFailData,
-	"helpfulLinks" => $helpfulLinks,
-	"helpfulLinkFolders" => $helpfulLinkFolders,
+	"allSites"             => $allSitesData,
+	"mySite"               => $mySitesData,
+	"authorized"           => $authorized,
+	"site_names"           => $site_names,
+	"screeningLog"         => $screeningLogData,
+	"enrollmentChart"      => $enrollmentChartData,
+	"exclusion"            => $exclusionData,
+	"screenFail"           => $screenFailData,
+	"helpfulLinks"         => $helpfulLinks,
+	"helpfulLinkFolders"   => $helpfulLinkFolders,
 	"clipboardImageSource" => $clipboardImageSource,
-	"folderImageSource" => $folderImageSource,
-	"siteStartupData" => $siteStartupData,
-    "siteCompletionData" => $siteCompletionData,
-    'randArmLabels' => $randArmlabels
+	"folderImageSource"    => $folderImageSource,
+	"siteStartupData"      => $siteStartupData,
+    "siteCompletionData"   => $siteCompletionData,
+    'randArmLabels'        => $randArmlabels
 ]);

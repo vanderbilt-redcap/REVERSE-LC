@@ -1,6 +1,6 @@
 {
-	"name": "RAAS_NECTAR",
-	"namespace": "Vanderbilt\\RAAS_NECTAR",
+	"name": "REVERSE_LC",
+	"namespace": "Vanderbilt\\REVERSE_LC",
 	"framework-version": 6,
 	"description": "Copy of PassItOn for RAAS NECTAR",
 	"documentation": "README.md",
@@ -24,7 +24,7 @@
 	"links": {
 		"project": [
 			{
-				"name": "RAAS_NECTAR Dashboard",
+				"name": "REVERSE_LC Dashboard",
 				"icon": "report",
 				"url": "dashboard.php"
 			}
@@ -35,21 +35,21 @@
 	"project-settings": [
 		{
 			"key": "screening_project",
-			"name": "RAAS_NECTAR Screening Project ID",
+			"name": "REVERSE_LC Screening Project ID",
 			"required": false,
 			"type": "project-id",
 			"repeatable": false
 		},
 		{
 			"key": "user_access_project",
-			"name": "RAAS_NECTAR User Access Database Project ID",
+			"name": "REVERSE_LC User Access Database Project ID",
 			"required": false,
 			"type": "project-id",
 			"repeatable": false
 		},
 		{
 			"key": "site_regulation_project",
-			"name": "RAAS_NECTAR Site Regulation Project ID",
+			"name": "REVERSE_LC Site Regulation Project ID",
 			"required": false,
 			"type": "project-id",
 			"repeatable": false
