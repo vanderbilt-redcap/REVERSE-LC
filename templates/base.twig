@@ -27,51 +27,25 @@
 				font: {size: "16"}
 			});
 		</script>
-
-		<style>
-			th.tablesorter-header {
-				background-image:url("{{ constant("APP_PATH_WEBPACK") }}images/sort_both.png");
-				background-repeat: no-repeat;
-				background-position: center right;
-			}
-
-			th.tablesorter-headerDesc {
-				background-image:url("{{ constant("APP_PATH_WEBPACK") }}images/sort_desc.png");
-			}
-
-			th.tablesorter-headerAsc {
-				background-image:url("{{ constant("APP_PATH_WEBPACK") }}images/sort_asc.png");
-			}
-		</style>
-
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 		<title>{% block title %}REVERSE LC Dashboard{%  endblock %}</title>
 	{% endblock %}
 </head>
 <body>
-<div class='main-wrapper'>
-	<div id="main-header" style="background-color: #eeeeee;min-height: 100px;">
-		<div class='row'>
-			<div class="col-sm-6 col-logo">
-				<a href="">
-					<img class="mlogo" style="max-height: 70px;" src="{{ constant("LOGO_LINK") }}">
-				</a>
-			</div>
-			<div class="col-sm-6 col-logo col-logo-right"><a href="" target="_blank"></a></div>
-		</div>
-	</div>
-</div>
-<div class='row' style='height:20px'>
-	<div style="padding-left:20px">
-		Welcome {{ constant("PIO_USER_DISPLAY_NAME") }} - <a href="https://www.passitonstudy.org/" onclick="logout();">Logout</a>
-	</div>
-</div>
 
-<div id="content" class="cols-xs-12" style="padding-left:15px">
+<header class="text-center py-4">
+  <img src="{{ constant("LOGO_LINK") }}" alt="REVERSE LC" class="img-fluid logo">
+</header>
+
+<div class="container card shadow d-flex justify-content-center">
 	{% block content %}{% endblock %}
 </div>
 <div>
 	{% block footer %}
 	{% endblock %}
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
 </body>
 </html>
