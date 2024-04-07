@@ -3,10 +3,6 @@
 <head>
 	{% block head %}
 		<link rel="stylesheet" href="{{ constant('APP_PATH_WEBPACK') }}css/bundle.css" />
-		{% if(constant("CSS_PATH_1")) %}
-		<link rel="stylesheet" href="{{ constant("CSS_PATH_1") }}" />
-		{% endif %}
-
 		<script type="text/javascript" src="{{ constant('APP_PATH_WEBPACK') }}js/bundle.js"></script>
 		<script type="text/javascript" src="{{ constant('APP_PATH_JS') }}Libraries/bundle.js"></script>
 		<script type="text/javascript" src="{{ constant('APP_PATH_JS') }}base.js"></script>
@@ -29,6 +25,10 @@
 		</script>
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+		{% if(constant("CSS_PATH_1")) %}
+		<link rel="stylesheet" href="{{ constant("CSS_PATH_1") }}" />
+		{% endif %}
+		
 		<title>{% block title %}REVERSE LC Dashboard{%  endblock %}</title>
 	{% endblock %}
 </head>

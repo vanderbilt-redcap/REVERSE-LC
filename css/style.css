@@ -4,12 +4,16 @@ body {
 }
 
 .logo {
-	max-width: 300px !important; 
+	max-width: 350px !important; 
 }
 
 .nav-pills .nav-link.active, .nav-pills .show>.nav-link {
     color: #fff;
     background-color: #153d77;
+}
+
+.bg-secondary {
+    background-color: #ffe4be !important;
 }
 
 /**********/
