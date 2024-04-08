@@ -250,7 +250,6 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
                 'exportDataAccessGroups' => true
 			];
 			$edc_data = json_decode(\REDCap::getData($params));
-   
 			$projectDags = $this->getDAGs($project_id);
 
 			// add dag and dag_name property to each record
@@ -268,6 +267,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		
 		return $this->edc_data;
 	}
+
     public function getScreeningData($projectId = false) {
         if(!$this->screening_data) {
             if(!$projectId) {
@@ -299,15 +299,13 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			if (!isset($inclusionData[$dag])) {
 				$inclusionData[$dag] = 0;
 			}
-			
-			if ($screening_record->include_yn == '1' || $screening_record->incl_not_met___4 == '1') {
+			if ($screening_record->continue_yn == '1' && $screening_record->exclude_yn != '1') {
 				$total++;
 				$inclusionData[$dag]++;
 			}
 		}
 		
 		$inclusionData["_total"] = $total;
-		
 		return $inclusionData;
 	}
 	private function getRegulatoryData($projectId = false) {
@@ -362,21 +360,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		}
 		return $this->user;
 	}
-	public function isSiteDomestic($dag_group_id) {
-		$reg_data = $this->getRegulatoryData();
-		if (array_search($dag_group_id, $reg_data['domestic_dag_ids']) !== false) {
-			return true;
-		}
-		return false;
-	}
-	public function isSiteInternational($dag_group_id) {
-		$reg_data = $this->getRegulatoryData();
-		if (array_search($dag_group_id, $reg_data['international_dag_ids']) !== false) {
-			return true;
-		}
-		return false;
-	}
-	
+
 	// HIGHER LEVEL methods
 	public function authorizeUser() {
 		/*
@@ -471,7 +455,6 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			
 			$this->records = $records;
 		}
-		
 		return $this->records;
 	}
 	public function getMySiteData() {
@@ -559,35 +542,13 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				"randomized": "0",
 				"fostamatinib": "0",
 				"treated": "0"
-			},
-			{
-				"name": "Currently Enrolled (Domestic)",
-				"fpe": "-",
-				"lpe": "-",
-				"screened": "0",
-				"eligible": "0",
-				"randomized": "0",
-				"fostamatinib": "0",
-				"treated": "0"
-			},
-			{
-				"name": "Currently Enrolled (International)",
-				"fpe": "-",
-				"lpe": "-",
-				"screened": "0",
-				"eligible": "0",
-				"randomized": "0",
-				"fostamatinib": "0",
-				"treated": "0"
 			}
 		]');
-		$data->domestic_sites = [];
-		$data->international_sites = [];
-		$data->sites_no_locality = [];
 		
 		// create temporary sites container
 		$sites = new \stdClass();
 		foreach ($this->records as $record) {
+			//Ignore the record if doesn't have a DAG
 			if (!$patient_dag = $record->dag)
 				continue;
 
@@ -611,19 +572,11 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$site->randomized = 0;
                 $site->fostamatinib = 0;
 				$site->treated = 0;
-			
-				if ($this->isSiteDomestic($site->group_id)) {
-					$site->locality = 'Domestic';
-				} elseif ($this->isSiteInternational($site->group_id)) {
-					$site->locality = 'International';
-				} else {
-					$data->sites_no_locality[] = $site->name;
-				}
 			}
-			
 			// // update columns using patient data
 			// FPE and LPE
 			$enroll_date = $record->randomization_date;
+
 			if (!empty($enroll_date)) {
 				if ($site->fpe == '-') {
 					$site->fpe = $enroll_date;
@@ -647,11 +600,6 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$data->totals[1]->eligible++;
 				$site->eligible++;
 				
-				if ($site->locality == 'Domestic') {
-					$data->totals[2]->eligible++;
-				} elseif ($site->locality == 'International') {
-					$data->totals[3]->eligible++;
-				}
 			}
 			// Randomized
 			if ($record->randomization_arm != '') {
@@ -662,17 +610,6 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
                     $data->totals[1]->fostamatinib++;
                     $site->fostamatinib++;
                 }
-				if ($site->locality == 'Domestic') {
-					$data->totals[2]->randomized++;
-                    if ($record->randomization_arm === "Fostamatinib") {
-                        $data->totals[2]->fostamatinib++;
-                    }
-				} elseif ($site->locality == 'International') {
-					$data->totals[3]->randomized++;
-                    if ($record->randomization_arm === "Fostamatinib") {
-                        $data->totals[3]->fostamatinib++;
-                    }
-				}
 			}
 			// Treated
 			if (
@@ -723,28 +660,16 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			) {
 				$data->totals[1]->treated++;
 				$site->treated++;
-				
-				if ($site->locality == 'Domestic') {
-					$data->totals[2]->treated++;
-				} elseif ($site->locality == 'International') {
-					$data->totals[3]->treated++;
-				}
 			}
 		}
 		
 		// site objects updated with patient data, dump into $data->sites
 		// effectively removing keys and keeping values in array
 		foreach ($sites as $site) {
-			if ($site->locality == 'Domestic') {
-				$data->domestic_sites[] = $site;
-				$data->totals[2]->screened += $site->screened;
-			} elseif ($site->locality == 'International') {
-				$data->international_sites[] = $site;
-				$data->totals[3]->screened += $site->screened;
-			}
-			
+			$data->sites[] = $site;
+			$data->totals[1]->screened += $site->screened;
 		}
-		
+
 		// sort all sites, randomized descending
 		if (!function_exists(__NAMESPACE__ . '\sortAllSitesData')) {
 			function sortAllSitesData($a, $b) {
@@ -753,14 +678,14 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				return $a->randomized < $b->randomized ? 1 : -1;
 			}
 		}
-		uasort($data->domestic_sites, __NAMESPACE__ . '\sortAllSitesData');
-		uasort($data->international_sites, __NAMESPACE__ . '\sortAllSitesData');
 		
 		// return
 		$this->all_sites_data = $data;
 		return json_decode(json_encode($this->all_sites_data), true);
 	}
-	public function updateAllSitesData(&$sites, $startup) {
+
+	public function updateAllSitesData(&$sites, $startup) 
+	{
 		foreach ($sites as &$site) {
 			// Site Activation (date)
 			foreach ($startup->sites as $site_i => $siteData) {

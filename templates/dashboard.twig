@@ -2,50 +2,41 @@
 
 {% block content %}
 
-<div id="tabs" style="width:100%; float:left; margin-top:5px;">
-	<div class='row'>
-		<div id="event-tabs" style="background-color:#ffffff; margin-left:0px;text-align:left">
-			<a class="tab active" id="allSitesData-button" onclick="activateTab('allSitesData');">
-				<div class='top-border'></div>
-				<div class='name'><b>Enrollment Statistics</b></div>
-			</a>
-			<a class="tab nonactive" id="mySiteData-button" onclick="activateTab('mySiteData');">
-				<div class='top-border'></div>
-				<div class='name'><b>My Site's Metrics</b></div>
-			</a>
-			<a class="tab nonactive" id="screening-button" onclick="activateTab('screening');">
-				<div class='top-border'></div>
-				<div class='name'><b>Screening</b></div>
-			</a>
-			<a class="tab nonactive" id="links-button" onclick="activateTab('links');">
-				<div class='top-border'></div>
-				<div class='name'><b>Helpful Links</b></div>
-			</a>
-			<a class="tab nonactive" id="activation-button" onclick="activateTab('activation');">
-				<div class='top-border'></div>
-				<div class='name'><b>Site Activation</b></div>
-			</a>
-		</div>
-	</div>
-	{#<div class='row' style="height:1px"></div>#}
-	<div id="allSitesData" class="row">
-		<div class="blue_bar col-12"></div>
-		<div>
-			<div class="dropdown p-2">
-				<button class="btn btn-primary dropdown-toggle" type="button" id="site_locality_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-					Site Locality: Global
-				</button>
-				<div class="dropdown-menu" aria-labelledby="site_locality_dropdown">
-					<a class="dropdown-item locality-dd-item" href="#">Global</a>
-					<a class="dropdown-item locality-dd-item" href="#">Domestic</a>
-					<a class="dropdown-item locality-dd-item" href="#">International</a>
-				</div>
-			</div>
-		</div>
-		<div class="row" style="width: 100%;">
-			<div class="col-6 has_enrollment_table">
-				<table class="dashboard">
-					<thead>
+
+<ul class="nav nav-fill nav-tabs nav-pills mb-3" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#allSitesData" type="button" role="tab" aria-controls="tab1" aria-selected="true">
+		<i class="fas fa-home"></i>
+		Enrollment Statistics
+		</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#mySiteData" type="button" role="tab" aria-controls="tab2" aria-selected="false">
+		My Site's Metrics
+		</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab3-tab" data-bs-toggle="tab" data-bs-target="#screening" type="button" role="tab" aria-controls="tab3" aria-selected="false">
+		Screening
+		</button>
+    </li>
+	<li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab4-tab" data-bs-toggle="tab" data-bs-target="#links" type="button" role="tab" aria-controls="tab4" aria-selected="false">
+		Helpful Links
+		</button>
+    </li>
+	<li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab5-tab" data-bs-toggle="tab" data-bs-target="#activation" type="button" role="tab" aria-controls="tab5" aria-selected="false">
+		Site Activation
+		</button>
+    </li>
+</ul>
+<div class="tab-content mt-3">
+	<div class="tab-pane fade show active" id="allSitesData" role="tabpanel" aria-labelledby="tab1-tab">
+		<div class="row">
+			<div class="col-12">
+				<table class="table table-striped table-bordered">
+					<thead class="bg-secondary">
 						<tr>
 							<th></th>
 							<th>Site Activation Date</th>
@@ -85,31 +76,7 @@
 						{% endfor %}
 						<tr class="first_row">
 							<td>By Site</td>
-							<td>(Domestic)</td>
 							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-						{% for siteDetails in allSites["domestic_sites"] %}
-							<tr data-dag="{{ siteDetails["dag"] }}" data-locality="{{ siteDetails['locality'] }}">
-								<td>{{ siteDetails["name"] }}</td>
-								<td>{{ siteDetails["open_date"] }}</td>
-								<td>{{ siteDetails["fpe"] }}</td>
-								<td>{{ siteDetails["lpe"] }}</td>
-								<td>{{ siteDetails["screened"] }}</td>
-								<td>{{ siteDetails["eligible"] }}</td>
-								<td>{{ siteDetails["randomized"] }}</td>
-								<td>{{ siteDetails["treated"] }}</td>
-								<td>{{ siteDetails["fostamatinib"] }}</td>
-							</tr>
-						{% endfor %}
-						<tr class="first_row">
-							<td>By Site</td>
-							<td>(International)</td>
 							<td></td>
 							<td></td>
 							<td></td>
@@ -118,7 +85,7 @@
 							<td></td>
 							<td></td>
 						</tr>
-						{% for siteDetails in allSites["international_sites"] %}
+						{% for siteDetails in allSites["sites"] %}
 							<tr data-dag="{{ siteDetails["dag"] }}" data-locality="{{ siteDetails['locality'] }}">
 								<td>{{ siteDetails["name"] }}</td>
 								<td>{{ siteDetails["open_date"] }}</td>
@@ -135,12 +102,12 @@
 				</table>
 			</div>
 			{# chart #}
-			<div class="col-6 chart-container" style="position: relative; height: 72vh; width: 50vw">
+			<div class="col-12 chart-container d-flex align-items-center justify-content-center" style="position: relative; height: 72vh;">
 				<canvas id="enrollment_chart"></canvas>
 			</div>
 		</div>
 	</div>
-	<div id="mySiteData">
+	<div class="tab-pane fade" id="mySiteData" role="tabpanel" aria-labelledby="tab2-tab">
 		<table class="dashboard sortable">
 			<thead>
 				<tr>
@@ -172,10 +139,7 @@
 			</tbody>
 		</table>
 	</div>
-	<div id="screening">
-		{# blue bar #}
-		<div class="blue_bar"></div>
-		{# green title bar #}
+	<div class="tab-pane fade" id="screening" role="tabpanel" aria-labelledby="tab3-tab">
 		<div class="report_title_bar"><span id="report_title"></span></div>
 		<div class="buttons">
 			<button onclick="showReport('screening_log')" class="report_switch">Screening Log Report</button>
@@ -441,9 +405,7 @@
 			</div>
 		</div>
 	</div>
-	<div id="links">
-		{# blue bar #}
-		<div class="blue_bar"></div>
+	<div class="tab-pane fade" id="links" role="tabpanel" aria-labelledby="tab4-tab">
 		<button class="close-folder btn btn-info">Return to folders</button>
 		<div class="row links">
 			{% for link in helpfulLinks %}
@@ -480,9 +442,7 @@
 			{% endif %}
 		</div>
 	</div>
-	<div id="activation">
-		{# blue bar #}
-		<div class="blue_bar"></div>
+	<div class="tab-pane fade" id="activation" role="tabpanel" aria-labelledby="tab5-tab">
 		<div id="activation_sites">
 			{% for error in siteStartupData.errors %}
 				{% if not error.dag %}
@@ -788,6 +748,7 @@
 		{% endif %}
 	</div>
 </div>
+
 
 {# enrollment chart js script below: #}
 <script>

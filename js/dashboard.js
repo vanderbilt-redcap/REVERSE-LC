@@ -1,30 +1,3 @@
-function hideAllTabs() {
-    $("#allSitesData").hide()
-    $("#allSitesData-button").removeClass('active').addClass('nonactive');
-    $("#mySiteData").hide();
-    $("#mySiteData-button").removeClass('active').addClass('nonactive');
-    $("#screening").hide();
-    $("#screening-button").removeClass('active').addClass('nonactive');
-    $("#links").hide();
-    $("#links-button").removeClass('active').addClass('nonactive');
-    $("#activation").hide();
-    $("#activation-button").removeClass('active').addClass('nonactive');
-}
-
-function activateTab(tabSelector) {
-    hideAllTabs();
-
-    $("#" + tabSelector).show();
-    $("#" + tabSelector + "-button").removeClass('nonactive').addClass('active');
-	
-	if (tabSelector == "screening") {
-		// show buttons, hide reports
-		$(".screening_report").hide();
-		$(".report_switch").show();
-		$("span#report_title").text("");
-	}
-}
-
 function showReport(report_name) {
 	// hide buttons and report divs
 	$(".report_switch").hide();
@@ -114,8 +87,6 @@ function setLocalityFilter(locality) {
 }
 
 $("document").ready(function() {
-    activateTab("allSitesData");
-	
 	window.site_locality_selected = "Global";
 	// get new Screening Log Report when select#site changes
 	$("select#site").change('change', function() {
