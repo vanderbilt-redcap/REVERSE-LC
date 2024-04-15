@@ -212,31 +212,48 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			return $this->mappings;
 		}
 	}
+
 	public function getUADData($project_id = false) {
 		if (!isset($this->uad_data)) {
+			$this->uad_data = false;
 		    if(!$project_id) {
 		        $project_id = $_GET['pid'];
             }
-		    $uadProject = $this->getProjectSetting("user_access_project",$project_id);
+
+			//User Access is defined in Regulatory Database
+		    $uadProject = $this->getProjectSetting("site_regulation_project",$project_id);
+			$thisUser   = $this->getUser();
+			$username   = $thisUser->getUsername();
+			$rolField   = $this->getProjectSetting("access_level_field",$project_id)[0];
 			
-			if (!empty($uadProject)) {
-				$params = [
-					'project_id' => $uadProject,
-					'return_format' => 'json',
-					'fields' => [
-						$this->id_field_name,
-						'pref_name',
-						'user_name'
-					]
-				]; 
-				$uad_data = json_decode(\REDCap::getData($params));
+			$params = [
+				'project_id' => $uadProject,
+				'return_format' => 'json',
+				'fields' => [
+					'dashboard',
+					$rolField,
+					'pref_name'
+				],
+				'filterLogic' => '[user_name] = "'.$username.'"'
+			];
+			$uad_data = json_decode(\REDCap::getData($params));
+			
+			if(!empty($uad_data)) {
+				$rights = $thisUser->getRights();
+				$this->uad_data = $uad_data[0];
+				if(!empty($rights['group_id'])) {
+					$DAGs = (array)$this->getDAGs();
+					$this->uad_data->dag_group_name = $DAGs[$rights['group_id']]->unique;
+					$this->uad_data->role = $this->uad_data->$rolField;
+				}
 			}
-			$this->uad_data = $uad_data;
+
 		}
-		
 		return $this->uad_data;
 	}
-	public function getEDCData($project_id = false) {
+
+	public function getEDCData($project_id = false)
+	{
 		if (!isset($this->edc_data) || !$this->edc_data) {
             if(!$project_id) {
                 $project_id = $_GET['pid'];
@@ -268,7 +285,8 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		return $this->edc_data;
 	}
 
-    public function getScreeningData($projectId = false) {
+    public function getScreeningData($projectId = false) 
+	{
         if(!$this->screening_data) {
             if(!$projectId) {
                 $projectId = $_GET['pid'];
@@ -289,7 +307,9 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 
         return $this->screening_data;
     }
-	public function getInclusionData() {
+
+	public function getInclusionData() 
+	{
 		if (!$this->screening_data) {
 			$this->getScreeningData();
 		}
@@ -308,7 +328,9 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		$inclusionData["_total"] = $total;
 		return $inclusionData;
 	}
-	private function getRegulatoryData($projectId = false) {
+
+	private function getRegulatoryData($projectId = false) 
+	{
 		if (!$this->regulatory_data) {
 			if(!$projectId) {
 				$projectId = $_GET['pid'];
@@ -344,61 +366,32 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
         }
         return $this->regulatory_data;
 	}
-	public function getUser() {
+	
+	public function getDashboardUser()
+	{
 		if (!isset($this->user)) {
-		    $this->user = false;
-
-			$this->getUADData();
-			foreach ($this->uad_data as $record) {
-				if ($record->user_name === constant("USERID")) {
-					unset($record->redcap_repeat_instrument);
-					unset($record->redcap_repeat_instance);
-					$this->user = $record;
-					define("PIO_USER_DISPLAY_NAME",$record->pref_name);
-				}
-			}
+			$this->user = $this->getUADData();
+			define("PIO_USER_DISPLAY_NAME", $this->user->pref_name);
 		}
 		return $this->user;
 	}
 
 	// HIGHER LEVEL methods
-	public function authorizeUser() {
-		/*
-			there are multiple tiers of dashboard access
-			user->authorized == false
-				no dashboard access
-			user->authorized == '1'
-				user can access dashboard
-				user can see all sites data
-				user cannot see my site data
-			user->authorized == '2'
-				user can access dashboard
-				user can see all sites data
-				user can my site data -- results limited to records with DAG that matches user's DAG
-			user->authorized == '3'
-				user can access dashboard
-				user can see all sites data
-				user can see my site data -- including all patient rows from all sites
-		*/
-		$this->getUser();
-		
-		/** User roles and access level are still pending to define **/
-		$this->user->authorized = true; 
-		return;
-		/**********/
-
-		if ($this->user === true || empty($this->user->dashboard)) {
+	public function authorizeUser() 
+	{
+		$user = $this->getDashboardUser();
+		if ($this->user === true  || $this->user->dashboard == 0) {
 			$this->user->authorized = false;
 			return;
 		}
-		
-		if (!empty($access_level = $this->access_tier_by_role[$this->user->role_ext_2])) {
-			$this->user->authorized = $access_level;
-		} else {
-			$this->user->authorized = false;
-		}
+		$userRole    = $this->user->role;
+		$accessLevel = $this->getAccessLevelByRole($userRole);
+
+	    $this->user->authorized = $accessLevel;
 	}
-	public function getRecords($project_id = false) {
+
+	public function getRecords($project_id = false)
+	{
 		if (!isset($this->records)) {
 			if($_GET['TESTING']) {
 				$this->records = json_decode(file_get_contents(__DIR__."/tests/test_data/records.json"),true);
@@ -457,29 +450,42 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		}
 		return $this->records;
 	}
-	public function getMySiteData() {
+
+	public function getAccessLevelByRole($userRole)
+	{
+		$project_id  = $this->getProjectId();
+		$roles       = $this->getProjectSetting("access_level_field_value",$project_id)[0];
+		$level       = $this->getProjectSetting("access_level",$project_id)[0];
+		$accessLevel = [];
+		foreach($roles as $seq => $role) {
+			$accessLevel[$role] = $level[$seq];
+		}
+		return $accessLevel[$userRole];
+	}
+
+	public function getMySiteData()
+	{
 		if($_GET['TESTING']) {
 			return json_decode(file_get_contents(__DIR__."/tests/test_data/site_a_data.json"),true);
 		}
 		
 		$this->getDAGs();
-		$this->getUser();
+		$this->getDashboardUser();
 		$this->getRecords();
 		$this->authorizeUser();
 		
+		//Access level pending
 		if ($this->user->authorized == false or $this->user->authorized == '1') {
 			$this->my_site_data = false;
 			return $this->my_site_data;
 		}
-		
 		$site_data = new \stdClass();
 		$site_data->site_name = "";
 		$site_data->rows = [];
 		$site_data->site_name = $this->user->dag_group_name;
-
 		// add record rows
 		foreach ($this->records as $record) {
-			if (($this->user->authorized == '2' and $record->dag_name == $this->user->dag_group_name) or $this->user->authorized == '3') {
+			if (( $record->dag_name == $this->user->dag_group_name) or $this->user->authorized == '3') {
 				$row = new \stdClass();
 				$id_field_name = $this->id_field_name;
 				$row->id = $record->$id_field_name;
@@ -512,7 +518,9 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		$this->my_site_data = $site_data;
 		return json_decode(json_encode($this->my_site_data), true);
 	}
-	public function getAllSitesData() {
+
+	public function getAllSitesData() 
+	{
 		if($_GET['TESTING']) {
 			return json_decode(file_get_contents(__DIR__."/tests/test_data/all_sites_data.json"),true);
 		}
@@ -1772,7 +1780,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 	// hooks
 	public function redcap_module_link_check_display($pid, $link) {
 		if ($link['name'] == 'REVERSE_LC Dashboard') {
-			$this->getUser();
+			$this->getDashboardUser();
 			$this->authorizeUser();
 			if ($this->user->authorized === false) {
 				return false;

@@ -41,13 +41,6 @@
 			"repeatable": false
 		},
 		{
-			"key": "user_access_project",
-			"name": "REVERSE_LC User Access Database Project ID",
-			"required": false,
-			"type": "project-id",
-			"repeatable": false
-		},
-		{
 			"key": "site_regulation_project",
 			"name": "REVERSE_LC Site Regulation Project ID",
 			"required": false,
@@ -71,6 +64,41 @@
 			"name": "Event Containing Screening Fields",
 			"type": "event-list",
 			"repeatable": false
+		},
+		{
+			"key": "access_level_roles",
+			"type": "sub_settings",
+			"name": "Access Level Configuration",
+			"sub_settings": [
+				{
+					"key": "access_level_field",
+					"name": "Access Level Role Field",
+					"type": "text"
+				},
+				{
+					"key": "roles",
+					"type": "sub_settings",
+					"name": "Rol",
+					"repeatable": true,
+					"sub_settings": [
+						{
+							"key": "access_level_field_value",
+							"name": "Rol Value",
+							"type": "text"
+						},
+						{
+							"key": "access_level",
+							"name": "Access Level",
+							"type": "dropdown",
+							"choices": [
+								{ "value": "1", "name": "1" },
+								{ "value": "2", "name": "2" },
+								{ "value": "3", "name": "3" }
+							]
+						}
+					]
+				}
+			]
 		},
 		{
 			"key": "helpful_links_folders",
