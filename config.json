@@ -66,36 +66,29 @@
 			"repeatable": false
 		},
 		{
-			"key": "access_level_roles",
+			"key": "role_field",
+			"name": "Role Field",
+			"type": "text"
+		},
+		{
+			"key": "roles",
 			"type": "sub_settings",
-			"name": "Access Level Configuration",
+			"name": "Roles / Access Level",
+			"repeatable": true,
 			"sub_settings": [
 				{
-					"key": "access_level_field",
-					"name": "Access Level Role Field",
+					"key": "access_level_field_value",
+					"name": "Rol Value",
 					"type": "text"
 				},
 				{
-					"key": "roles",
-					"type": "sub_settings",
-					"name": "Rol",
-					"repeatable": true,
-					"sub_settings": [
-						{
-							"key": "access_level_field_value",
-							"name": "Rol Value",
-							"type": "text"
-						},
-						{
-							"key": "access_level",
-							"name": "Access Level",
-							"type": "dropdown",
-							"choices": [
-								{ "value": "1", "name": "1" },
-								{ "value": "2", "name": "2" },
-								{ "value": "3", "name": "3" }
-							]
-						}
+					"key": "access_level",
+					"name": "Access Level",
+					"type": "dropdown",
+					"choices": [
+						{ "value": "1", "name": "1" },
+						{ "value": "2", "name": "2" },
+						{ "value": "3", "name": "3" }
 					]
 				}
 			]

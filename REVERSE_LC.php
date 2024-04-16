@@ -224,7 +224,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		    $uadProject = $this->getProjectSetting("site_regulation_project",$project_id);
 			$thisUser   = $this->getUser();
 			$username   = $thisUser->getUsername();
-			$rolField   = $this->getProjectSetting("access_level_field",$project_id)[0];
+			$rolField   = $this->getProjectSetting("role_field",$project_id);
 			
 			$params = [
 				'project_id' => $uadProject,
@@ -387,6 +387,21 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		$userRole    = $this->user->role;
 		$accessLevel = $this->getAccessLevelByRole($userRole);
 
+		//The access level 1, 2, or 3 is assigned to a specific role using the module settings.
+		/*
+			user->authorized == '1'
+                        user can access dashboard
+                        user can see all sites data
+                        user cannot see my site data
+            user->authorized == '2'
+                        user can access dashboard
+                        user can see all sites data
+                        user can my site data -- results limited to records with DAG that matches user's DAG
+            user->authorized == '3'
+                        user can access dashboard
+                        user can see all sites data
+                        user can see my site data -- including all patient rows from all sites
+		*/
 	    $this->user->authorized = $accessLevel;
 	}
 
@@ -454,8 +469,8 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 	public function getAccessLevelByRole($userRole)
 	{
 		$project_id  = $this->getProjectId();
-		$roles       = $this->getProjectSetting("access_level_field_value",$project_id)[0];
-		$level       = $this->getProjectSetting("access_level",$project_id)[0];
+		$roles       = $this->getProjectSetting("access_level_field_value",$project_id);
+		$level       = $this->getProjectSetting("access_level",$project_id);
 		$accessLevel = [];
 		foreach($roles as $seq => $role) {
 			$accessLevel[$role] = $level[$seq];
