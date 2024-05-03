@@ -1,6 +1,9 @@
 <?php
 namespace Vanderbilt\REVERSE_LC;
 
+use stdClass;
+use UserRights;
+
 class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 	public $edc_data;
 	public $uad_data;
@@ -379,13 +382,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 	// HIGHER LEVEL methods
 	public function authorizeUser() 
 	{
-		$user = $this->getDashboardUser();
-		if ($this->user === true  || $this->user->dashboard == 0) {
-			$this->user->authorized = false;
-			return;
-		}
-		$userRole    = $this->user->role;
-		$accessLevel = $this->getAccessLevelByRole($userRole);
+		$this->getDashboardUser();
 
 		//The access level 1, 2, or 3 is assigned to a specific role using the module settings.
 		/*
@@ -402,7 +399,34 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
                         user can see all sites data
                         user can see my site data -- including all patient rows from all sites
 		*/
-	    $this->user->authorized = $accessLevel;
+
+		if ($this->user === false) {
+			$this->user = new stdClass();
+			//VCC staff won’t be entered as records in the Regulatory Database
+			//So we need to look at the system role
+			$uadProject = $this->getProjectSetting("site_regulation_project",$this->getProjectId());
+			$thisUser   = $this->getUser();
+			$username   = $thisUser->getUsername();
+			$userRights = UserRights::getPrivileges($uadProject,$username);
+			$userRights = $userRights[$uadProject][$username]['role_name'];
+			// If role starts with "VCC" give total access
+			if (strpos($userRights, "VCC") === 0) {
+				$this->user->authorized = 3; //
+				$this->user->dashboard == 1;
+				return;
+			} else {
+				$this->user->authorized = false;
+			}
+			return;
+		} elseif ($this->user->dashboard == 0) {
+			$this->user = new stdClass();
+			$this->user->authorized = false;
+			return;
+		} else {
+			$userRole    = $this->user->role;
+			$accessLevel = $this->getAccessLevelByRole($userRole);
+			$this->user->authorized = $accessLevel;
+		}
 	}
 
 	public function getRecords($project_id = false)
