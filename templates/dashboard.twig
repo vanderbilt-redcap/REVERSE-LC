@@ -452,15 +452,15 @@
 				{% endif %}
 			{% endfor %}
 			<div class="row">
-				<div class="dropdown active-site-select">
-					<button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<div class="dropdown active-site-select mb-3">
+					<button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
 						Select a site
 					</button>
-					<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+					<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
 						{% for site in siteStartupData.sites %}
-						<a class="dropdown-item" href="#">{{ site.site_number }} - {{ site.record_id }}</a>
+						<li><a class="dropdown-item" href="#">{{ site.site_number }} - {{ site.record_id }}</a></li>
 						{% endfor %}
-					</div>
+					</ul>
 				</div>
 				{% if siteCompletionData %}
 					<button class="btn btn-primary active-site-select" style="margin-left:30px" onclick="$('#activation_completion_report').show();$('#activation_sites').hide();">View Site Completion Report</button>
