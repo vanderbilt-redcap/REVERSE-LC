@@ -157,10 +157,12 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		
 		return $this->event_ids;
 	}
+
 	public function getDAGs($project_id = false) {
 		if (!isset($this->dags)) {
 		    if(!$project_id) {
-		        $project_id = $_GET['pid'];
+				$edcProjectId = $this->getProjectSetting('edc_project');
+		        $project_id   = $edcProjectId;
             }
 			
 			// create global $Proj that REDCap class uses to generate DAG info
@@ -187,7 +189,10 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		return $this->dags;
 	}
 	public function getFieldLabelMapping($fieldName = false) {
-		global $Proj;
+
+		$edcProjectId = $this->getProjectSetting('edc_project');
+		$Proj   = new \Project($edcProjectId);
+
 		if ($Proj->metadata[$fieldName]['element_type'] == 'calc') {
 			return false;
 		}
@@ -195,7 +200,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		if(!isset($this->mappings)) {
 			$this->mappings = [];
 			foreach($this->record_fields as $thisField) {
-				$choices = $this->getChoiceLabels($thisField);
+				$choices = $this->getChoiceLabels($thisField,$edcProjectId);
 
 				if($choices && (count($choices) > 1 || reset($choices)) != "") {
 					$this->mappings[$thisField] = $choices;
@@ -220,7 +225,8 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		if (!isset($this->uad_data)) {
 			$this->uad_data = false;
 		    if(!$project_id) {
-		        $project_id = $_GET['pid'];
+		        $edcProjectId = $this->getProjectSetting('edc_project');
+		        $project_id   = $edcProjectId;
             }
 
 			//User Access is defined in Regulatory Database
@@ -259,7 +265,8 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 	{
 		if (!isset($this->edc_data) || !$this->edc_data) {
             if(!$project_id) {
-                $project_id = $_GET['pid'];
+				$edcProjectId = $this->getProjectSetting('edc_project');
+                $project_id   = $edcProjectId;
             }
 			$this->getEventIDs();
 			$params = [
@@ -292,7 +299,8 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 	{
         if(!$this->screening_data) {
             if(!$projectId) {
-                $projectId = $_GET['pid'];
+				$edcProjectId = $this->getProjectSetting('edc_project');
+                $projectId    = $edcProjectId;
             }
 
             $screeningProjectId = $this->getProjectSetting("screening_project", $projectId);
@@ -336,7 +344,8 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 	{
 		if (!$this->regulatory_data) {
 			if(!$projectId) {
-				$projectId = $_GET['pid'];
+				$edcProjectId = $this->getProjectSetting('edc_project');
+                $projectId    = $edcProjectId;
 			}
 			
             $regulatoryProjectId = $this->getProjectSetting("site_regulation_project", $projectId);
@@ -439,7 +448,8 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			}
 
             if(!$project_id) {
-                $project_id = $_GET['pid'];
+				$edcProjectId = $this->getProjectSetting('edc_project');
+		        $project_id   = $edcProjectId;
             }
 			$this->getEDCData($project_id);
 			// iterate over edc_data, collating data into record objects
@@ -812,7 +822,9 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		$screening_log_data->rows[] = ["Grand Total", $total_screened, $total_screened];
 		return $screening_log_data;
 	}
-	public function getEnrollmentChartData($options = null) {
+
+	public function getEnrollmentChartData($options = null) 
+	{
 		// determine earliest screened date (upon which weeks array will be based)
 		// 2021-08-05 we're changing to count "Randomized" instead of "Enrolled"
 		

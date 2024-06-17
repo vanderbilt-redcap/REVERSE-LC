@@ -34,15 +34,22 @@
 	"no-auth-pages": [],
 	"project-settings": [
 		{
+			"key": "edc_project",
+			"name": "EDC Project ID",
+			"required": false,
+			"type": "project-id",
+			"repeatable": false
+		},
+		{
 			"key": "screening_project",
-			"name": "REVERSE_LC Screening Project ID",
+			"name": "Screening Project ID",
 			"required": false,
 			"type": "project-id",
 			"repeatable": false
 		},
 		{
 			"key": "site_regulation_project",
-			"name": "REVERSE_LC Site Regulation Project ID",
+			"name": "Site Regulation Project ID",
 			"required": false,
 			"type": "project-id",
 			"repeatable": false
@@ -50,19 +57,19 @@
 		{
 			"key": "demographics_event",
 			"name": "Event Containing Demographics Fields",
-			"type": "event-list",
+			"type": "text",
 			"repeatable": false
 		},
 		{
 			"key": "transfusion_event",
 			"name": "Event Containing Transfusion Field",
-			"type": "event-list",
+			"type": "text",
 			"repeatable": false
 		},
 		{
 			"key": "screening_event",
 			"name": "Event Containing Screening Fields",
-			"type": "event-list",
+			"type": "text",
 			"repeatable": false
 		},
 		{
