@@ -24,6 +24,7 @@ function copyToClipboard(element) {
     $temp.remove();
 }
 
+
 function clickedFolder(clickEvent) {
 	var folder = $(clickEvent.currentTarget);
 	var folder_index = folder.attr("data-index") - 1;
@@ -134,6 +135,30 @@ $("document").ready(function() {
 	$("body").on("mousedown touchstart", "button.clipboard", function() {
 		var url_span = $(this).closest("div.card").find('a.link_url')
 		copyToClipboard(url_span);
+	});
+
+	var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+	var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+		return new bootstrap.Tooltip(tooltipTriggerEl);
+	});
+	
+	document.querySelectorAll('.copyBtn').forEach(function(button) {
+		button.addEventListener('click', function() {
+			const url = this.closest('.card-body').querySelector('a').href;
+			navigator.clipboard.writeText(url).then(function() {
+				 // Show tooltip
+				 const tooltip = bootstrap.Tooltip.getInstance(button);
+				 button.setAttribute('data-bs-original-title', 'URL copied to clipboard!');
+				 tooltip.show();
+				 // Hide tooltip after 1.5 seconds
+				 setTimeout(() => {
+					 tooltip.hide();
+					 button.setAttribute('data-bs-original-title', 'Copy URL to Clipboard');
+				 }, 1500);
+			}).catch(function(error) {
+				console.error('Failed to copy URL: ', error);
+			});
+		});
 	});
 	
 	// update links shown when user clicks helpful links folder
