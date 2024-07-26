@@ -428,13 +428,19 @@
 				</div>
 			{% endfor %}
 		</div>
-		<div class="row folders" style="justify-content: center;">
+		<div class="row mb-4 g-4 folders" style="justify-content: center;">
 			{% for folder in helpfulLinkFolders %}
-				<div class="folder" data-index="{{ loop.index }}">
-					<img src="{{ folderImageSource }}" alt="Folder of links named '{{ folder.name }}'" style="background: {{folder.color}};"/>
-					<div class="centered">
-						<p>{{ folder.name }}</p>
-						<p>{{ folder.linkCount }} Links</p>
+				<div class="col-2 folder"  data-index="{{ loop.index }}">
+					<div class="card" style="
+							background: {{folder.color}} url({{ folderImageSource }});
+							background-size: 99%;
+							background-position: center;
+							background-repeat: no-repeat;
+							height:250px;	
+						">
+						<div class="card-body d-flex align-items-center justify-content-center">
+							<h6 class="card-title text-center">{{ folder.name }} <br> {{ folder.linkCount }} Links </h6>
+						</div>
 					</div>
 				</div>
 			{% endfor %}
