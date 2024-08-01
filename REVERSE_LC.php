@@ -534,7 +534,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		$site_data->site_name = $this->user->dag_group_name;
 		// add record rows
 		foreach ($this->records as $record) {
-			if (( $record->dag_name == $this->user->dag_group_name) or $this->user->authorized == '3') {
+			if (($this->user->authorized == '2' and $record->dag_name == $this->user->dag_group_name) or $this->user->authorized == '3') {
 				$row = new \stdClass();
 				$id_field_name = $this->id_field_name;
 				$row->id = $record->$id_field_name;
