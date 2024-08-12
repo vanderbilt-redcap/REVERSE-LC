@@ -250,13 +250,12 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			if(!empty($uad_data)) {
 				$rights = $thisUser->getRights();
 				$this->uad_data = $uad_data[0];
+				$this->uad_data->role = $this->uad_data->$rolField;
 				if(!empty($rights['group_id'])) {
 					$DAGs = (array)$this->getDAGs();
 					$this->uad_data->dag_group_name = $DAGs[$rights['group_id']]->unique;
-					$this->uad_data->role = $this->uad_data->$rolField;
 				}
 			}
-
 		}
 		return $this->uad_data;
 	}
@@ -408,7 +407,6 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
                         user can see all sites data
                         user can see my site data -- including all patient rows from all sites
 		*/
-
 		if ($this->user === false) {
 			$this->user = new stdClass();
 			//VCC staff won’t be entered as records in the Regulatory Database
