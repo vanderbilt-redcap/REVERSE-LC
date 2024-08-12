@@ -585,7 +585,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				"screened": "-",
 				"eligible": "-",
 				"randomized": 1600,
-				"fostamatinib": "0",
+				"baricitinib": "0",
 				"treated": 1600
 			},
 			{
@@ -595,7 +595,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				"screened": ' . $inclusionData['_total'] . ',
 				"eligible": "0",
 				"randomized": "0",
-				"fostamatinib": "0",
+				"baricitinib": "0",
 				"treated": "0"
 			}
 		]');
@@ -625,7 +625,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				
 				$site->eligible = 0;
 				$site->randomized = 0;
-                $site->fostamatinib = 0;
+                $site->baricitinib = 0;
 				$site->treated = 0;
 			}
 			// // update columns using patient data
@@ -661,9 +661,9 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$data->totals[1]->randomized++;
     
 				$site->randomized++;
-                if ($record->randomization_arm === "Fostamatinib") {
-                    $data->totals[1]->fostamatinib++;
-                    $site->fostamatinib++;
+                if ($record->randomization_arm === "Baricitinib") {
+                    $data->totals[1]->baricitinib++;
+                    $site->baricitinib++;
                 }
 			}
 			// Treated
