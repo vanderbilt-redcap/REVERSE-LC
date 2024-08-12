@@ -16,6 +16,21 @@ body {
     background-color: #ffe4be !important;
 }
 
+.bg-teal {
+	background-color: #0ec6bc !important;
+}
+
+.bg-green {
+	background-color: #8db670 !important;
+}
+
+.bg-orange {
+	background-color: #fe9909 !important;
+}
+.min-h-100 {
+	min-height: 1005;
+}
+
 /**********/
 
 div.buttons {
@@ -32,13 +47,12 @@ div.buttons {
 
 #screening table, #screening th, #screening td {
 	text-align: center;
-	border: 1px solid black;
 }
 #screening tr:nth-child(even):not(.first_row):not(:last-child) > td {
     background-color:#fff;
 }
 #screening thead th {
-    background-color:#138085;
+    background-color:#f1990b;
 	font-weight: normal;
 }
 
@@ -51,7 +65,7 @@ div.buttons {
 	font-weight: bold;
 }
 #screening_log table tr:last-child td {
-    background-color:#138085;
+    background-color:#f1990b;
 }
 #screening_log div.col-6 {
 	display: flex;

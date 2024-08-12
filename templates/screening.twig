@@ -1,0 +1,280 @@
+<div class="row justify-content-center  text-center content-menu mb-4" id="screeningMenu">
+    <div class="col-2">
+        <button data-report='screening_log' onclick="showReport(this)" class="border-0 h-100 p-4 btn btn-primary bg-teal">Screening Log Report</button>
+    </div>
+    <div class="col-2">
+        <button data-report='exclusion' onclick="showReport(this)" class="border-0 h-100 p-4 btn btn-primary bg-green">Exclusion Report</button>
+    </div>
+    <div class="col-2">
+        <button data-report='screen_fail' onclick="showReport(this)"class="border-0 h-100 p-4 btn btn-primary bg-orange">Screening Fail Report</button>
+   </div>   
+</div>
+
+<div class="content-container d-none" data-menu='screeningMenu' id="screening_log">
+    <div class="row">
+        <div class="col-12 text-center">
+            <h3 class="mb-4">Screening Log Report</h3>
+        </div>    
+        <div class="col-6">
+            {# dropdown #}
+            <select name="site" id="site">
+                <option>Choose institution</option>
+                {% for site_name in site_names %}
+                <option>{{ site_name }}</option>
+                {% endfor %}
+            </select>
+            
+            {# table #}
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>Week</th>
+                        <th>Sum of Prescreened</th>
+                        <th>Cumulative Prescreened</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in screeningLog.rows %}
+                    <tr>
+                        <td>{{ row.0 }}</td>
+                        <td>{{ row.1 }}</td>
+                        <td>{{ row.2 }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <button class="btn btn-primary my-3" onclick="showMenu(this);">Return to Main Page</button>
+        </div>
+        {# chart #}
+        <div class="col-6">
+            <canvas id="screening_log_chart" width="400" height="400"></canvas>
+            <script>
+                var week_labels = [
+                    {% for row in screeningLog.rows|slice(0,-1) %}
+                        '{{ row.0 }}',
+                    {% endfor %}
+                ];
+                var data1 = [
+                    {% for row in screeningLog.rows|slice(0,-1) %}
+                        {{ row.1 }},
+                    {% endfor %}
+                ];
+                var data2 = [
+                    {% for row in screeningLog.rows|slice(0,-1) %}
+                        {{ row.2 }},
+                    {% endfor %}
+                ];
+                var ctx = document.getElementById('screening_log_chart').getContext('2d');
+                var screening_log_chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: week_labels,
+                        datasets: [{
+                            label: 'Participants Screened',
+                            data: data1,
+                            {# backgroundColor: 'rgba(255, 99, 132, 0.2)', #}
+                            borderColor: 'rgba(13, 127, 133, 1)',
+                            borderWidth: 2,
+                            type: 'line',
+                            datalabels: {
+                                anchor: 'center'
+                            }
+                        },{
+                            label: 'Cumulative Screened',
+                            data: data2,
+                            backgroundColor: 'rgba(180, 199, 231, 1)',
+                            borderWidth: 1,
+                            datalabels: {
+                                offset: 12
+                            }
+                        }]
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            fontSize: 24,
+                            fontStyle: 'normal',
+                            text: 'Participant Screening'
+                        },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
+            </script>
+        </div>
+    </div>
+</div>
+<div class="content-container d-none" data-menu='screeningMenu' id="exclusion">
+    <div class="row">
+        <div class="col-12 text-center">
+            <h3 class="mb-3">Exclusion Report</h3>
+        </div>
+        <div class="col-6">
+            {# table #}
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>Criteria</th>
+                        <th>Description</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in exclusion.rows %}
+                    <tr>
+                        <td>{{ row.0 }}</td>
+                        <td>{{ row.1 }}</td>
+                        <td>{{ row.2 }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <button class="btn btn-primary my-3" onclick="showMenu(this);">Return to Main Page</button>
+        </div>
+        {# chart #}
+        <div class="col-6">
+            <canvas id="exclusion_chart" width="400" height="300"></canvas>
+            <script>
+                var excl_labels = [
+                    {% for row in exclusion.rows %}
+                        '{{ row.0 }}',
+                    {% endfor %}
+                ];
+                var exclusion_counts = [
+                    {% for row in exclusion.rows %}
+                        {{ row.2 }},
+                    {% endfor %}
+                ];
+                var exclusion_sum = 0;
+                exclusion_counts.forEach(function(count) {exclusion_sum = exclusion_sum + count;});
+                
+                var ctx_excl = document.getElementById('exclusion_chart').getContext('2d');
+                var exclusion_chart = new Chart(ctx_excl, {
+                    type: 'bar',
+                    data: {
+                        labels: excl_labels,
+                        datasets: [{
+                            label: 'Participants Excluded',
+                            data: exclusion_counts,
+                            borderColor: 'rgba(13, 127, 133, 1)',
+                            backgroundColor: 'rgba(13, 127, 133, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            fontSize: 24,
+                            fontStyle: 'normal',
+                            text: 'Total Excluded; n=' + exclusion_sum
+                        },
+                        scales: {
+                            xAxes: [{
+                                ticks: {
+                                    fontColor: '#8c4cbc',
+                                    fontSize: 18,
+                                    fontStyle: 'bold'
+                                }
+                            }],
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
+            </script>
+        </div>
+    </div>
+</div>
+<div class="content-container d-none" data-menu='screeningMenu' id="screen_fail">
+    <div class="row">
+        <div class="col-12 text-center">
+            <h3 class="mb-3">Screen Fail Report</h3>
+        </div>
+        <div class="col-6">
+            {# table #}
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>Criteria</th>
+                        <th>Description</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in screenFail.rows %}
+                    <tr>
+                        <td>{{ row.0 }}</td>
+                        <td>{{ row.1 }}</td>
+                        <td>{{ row.2 }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <button class="btn btn-primary my-3" onclick="showMenu(this);">Return to Main Page</button>
+        </div>
+        {# chart #}
+        <div class="col-6">
+            <canvas id="screen_fail_chart" width="400" height="300"></canvas>
+            <script>
+                var fail_labels = [
+                    {% for row in screenFail.rows %}
+                        '{{ row.0 }}',
+                    {% endfor %}
+                ];
+                var fail_counts = [
+                    {% for row in screenFail.rows %}
+                        {{ row.2 }},
+                    {% endfor %}
+                ];
+                var fail_sum = 0;
+                fail_counts.forEach(function(count) {fail_sum = fail_sum + count;});
+                
+                var ctx_fail = document.getElementById('screen_fail_chart').getContext('2d');
+                var fail_chart = new Chart(ctx_fail, {
+                    type: 'bar',
+                    data: {
+                        labels: fail_labels,
+                        datasets: [{
+                            label: 'Screening Failures',
+                            data: fail_counts,
+                            borderColor: 'rgba(13, 127, 133, 1)',
+                            backgroundColor: 'rgba(13, 127, 133, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            fontSize: 24,
+                            fontStyle: 'normal',
+                            text: 'Total Excluded; n=' + fail_sum
+                        },
+                        scales: {
+                            xAxes: [{
+                                ticks: {
+                                    fontColor: '#8c4cbc',
+                                    fontSize: 18,
+                                    fontStyle: 'bold'
+                                }
+                            }],
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
+            </script>
+        </div>
+    </div>
+</div>
+    

@@ -1,13 +1,27 @@
-function showReport(report_name) {
-	// hide buttons and report divs
-	$(".report_switch").hide();
-	$(".screening_report").hide();
-	
-	// show report div
-	$("#" + report_name).show();
-	// set report title
-	var titles = {screening_log: "Screening Log Report", exclusion: "Exclusion Report", screen_fail: "Screen Fail Report"};
-	$("span#report_title").text(titles[report_name]);
+function showReport(button) {
+	// Get the corresponding content container
+	const contentId = button.getAttribute('data-report');
+
+	// Hide the associated menu
+	var menu = button.closest('.content-menu');
+	menu.classList.add('d-none');
+
+	// Hide all content containers
+	const contents = document.getElementsByClassName('content-container');
+	for (var i = 0; i < contents.length; i++) {
+		contents[i].classList.add('d-none');
+	}
+	// Show the selected content
+	document.getElementById(contentId).classList.remove('d-none');
+}
+
+function showMenu(button) {
+	// Hide the content container
+	const content = button.closest('.content-container');
+	content.classList.add('d-none');
+	// Show the associated menu using data-menu attribute
+	const menuId = content.getAttribute('data-menu');
+	document.getElementById(menuId).classList.remove('d-none');
 }
 
 function logout() {
