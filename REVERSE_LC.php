@@ -252,7 +252,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$this->uad_data = $uad_data[0];
 				$this->uad_data->role = $this->uad_data->$rolField;
 				if(!empty($rights['group_id'])) {
-					$DAGs = (array)$this->getDAGs();
+					$DAGs = (array)$this->getDAGs($uadProject);
 					$this->uad_data->dag_group_name = $DAGs[$rights['group_id']]->unique;
 				}
 			}
