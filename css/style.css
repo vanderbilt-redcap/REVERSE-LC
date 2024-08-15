@@ -52,8 +52,9 @@ div.buttons {
     background-color:#fff;
 }
 #screening thead th {
-    background-color:#f1990b;
-	font-weight: normal;
+    background-color: #ffe4be;
+    color: black;
+    font-weight: bold;
 }
 
 .screening_report div.col-6 * {
@@ -65,7 +66,9 @@ div.buttons {
 	font-weight: bold;
 }
 #screening_log table tr:last-child td {
-    background-color:#f1990b;
+    background-color: #ffe4be;
+    color: black;
+    font-weight: bold;
 }
 #screening_log div.col-6 {
 	display: flex;
