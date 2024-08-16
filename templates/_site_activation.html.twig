@@ -1,0 +1,281 @@
+<div id="activation_sites mb-4">
+    {% for error in siteStartupData.errors %}
+        {% if not error.dag %}
+            <div class="errors_without_dag alert alert-{{ error.class }}" role="alert">
+                {{ error.text }}
+            </div>
+        {% endif %}
+    {% endfor %}
+    <div class="row justify-content-center">
+        <div class="col-12 text-left">
+            <div class="dropdown active-site-select mb-3">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    Select a site
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    {% for site in siteStartupData.sites %}
+                    <li><a class="dropdown-item" href="#">{{ site.record_id }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% if siteCompletionData %}
+            <div class="col-6 text-center">
+                <button class="btn btn-primary my-4 active-site-select" onclick="$('#activation_completion_report').show();$('#activation_sites').hide();">View Site Completion Report</button>
+            </div>
+        {% endif %}
+    </div>
+    <div class="row">
+        {% for site in siteStartupData.sites %}
+        <div data-rid="{{ site.record_id }}" class="activation-container">
+            {% for error in siteStartupData.errors %}
+                {% if error.dag == site.redcap_data_access_group %}
+                    <div class="alert alert-{{ error.class }}" role="alert">
+                        {{ error.text }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <h2>{{ site.record_id }}</h2>
+            <p>Vanguard: <b>{{ site.selected_vanguard }}</b>&nbsp;&nbsp;&nbsp;&nbsp;Biomarker: <b>{{ site.site_selected_biomarker }}</b></p>
+            <div class="ref_fields">
+                <span data-field-name="cv_review_vcc">{{ site.cv_review_vcc }}</span>
+                <span data-field-name="doa_vcc_review">{{ site.doa_vcc_review }}</span>
+                <span data-field-name="license_review_vcc">{{ site.license_review_vcc }}</span>
+                <span data-field-name="fin_dis_review_vcc">{{ site.fin_dis_review_vcc }}</span>
+                <span data-field-name="handwrite_review_vcc">{{ site.handwrite_review_vcc }}</span>
+                <span data-field-name="gcp_review_vcc">{{ site.gcp_review_vcc }}</span>
+                <span data-field-name="citi_review_vcc">{{ site.citi_review_vcc }}</span>
+                <span data-field-name="train_review_vcc">{{ sitetrain_review_vcccv_review_vcc }}</span>
+            </div>
+            <table class="table activation-tables">
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td>Site Status for Category</td>
+                    <td>Site Information Questionnaire Sent</td>
+                    <td>Site Information Questionnaire Received</td>
+                    <td>Site Information Questionnaire Accepted</td>
+                    <td>Part 2 Consent Template Sent to Site</td>
+                    <td>Part 2 Consent Accepted by VCC</td>
+                    <td>Institutional Profile Complete</td>
+                    <td>HRP Survey Complete</td>
+                    <td>PI Survey Complete</td>
+                    <td>sIRB Approval Date</td>
+                    <td>Date sIRB Released to Site</td>
+                </tr>
+                <tr class="data">
+                    <td></td>
+                    <td>sIRB Status</td>
+                    <td>{{ site.site_status }}</td>
+                    <td>{{ site.siq_sent_date }}</td>
+                    <td>{{ site.siq_rec_date }}</td>
+                    <td>{{ site.siq_acc_date }}</td>
+                    <td>{{ site.vcc_survey_accepted }}</td>
+                    <td>{{ site.vcc_pt2_approved }}</td>
+                    <td>{{ site.irex_inst_date }}</td>
+                    <td>{{ site.irex_hrp_date }}</td>
+                    <td>{{ site.irex_pi_survey_date }}</td>
+                    <td>{{ site.sirb_app_date }}</td>
+                    <td>{{ site.econ_up_date }}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Template Sent</td>
+                    <td>Partially Executed</td>
+                    <td>Fully Executed</td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                </tr>
+                <tr class="data">
+                    <td></td>
+                    <td>Contract</td>
+                    <td>{{ site.sirb_status_2 }}</td>
+                    <td>{{ site.template_sent }}</td>
+                    <td>{{ site.contract_pe }}</td>
+                    <td>{{ site.contract_fe }}</td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>IB Acknowledgement</td>
+                    <td>Laboratory Documents</td>
+                    <td>Protocol Signature Page</td>
+                    <td>sIRB Approval</td>
+                    <td>Site Address/Contact Information</td>
+                    <td>User Access Form</td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                </tr>
+                <tr class="data">
+                    <td></td>
+                    <td>Site Documents</td>
+                    <td>{{ site.ctom_site_docs_approve }}</td>
+                    <td></td>
+                    <td>{{ site.ib_ack }}</td>
+                    <td>{{ site.lab_docs }}</td>
+                    <td>{{ site.psp_signed }}</td>
+                    <td>{{ site.sirb_approved }}</td>
+                    <td>{{ site.site_info_confirm }}</td>
+                    <td>{{ site.ua_received }}</td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td class="null"></td>
+                    <td>CV</td>
+                    <td>DOA</td>
+                    <td>License</td>
+                    <td>Financial Disclosure</td>
+                    <td>Handwriting Profile</td>
+                    <td>Good Clinical Practice Training</td>
+                    <td>Human Subjects Protection Training</td>
+                    <td>Site Related Training</td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                </tr>
+                <tr class="data">
+                    <td></td>
+                    <td>PI Documents</td>
+                    <td class="null"></td>
+                    <td class="{{ site.pi.cv.class }}">{{ site.pi.cv.value }}</td>
+                    <td class="{{ site.pi.doa.class }}">{{ site.pi.doa.value }}</td>
+                    <td class="{{ site.pi.license.class }}">{{ site.pi.license.value }}</td>
+                    <td class="{{ site.pi.fdf.class }}">{{ site.pi.fdf.value }}</td>
+                    <td class="{{ site.pi.hand_prof.class }}">{{ site.pi.hand_prof.value }}</td>
+                    <td class="{{ site.pi.gcp.class }}">{{ site.pi.gcp.value }}</td>
+                    <td class="{{ site.pi.hsp.class }}">{{ site.pi.hsp.value }}</td>
+                    <td class="{{ site.pi.training.class }}">{{ site.pi.training.value }}</td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td class="null"></td>
+                    <td>CV</td>
+                    <td>DOA</td>
+                    <td>License</td>
+                    <td>Financial Disclosure</td>
+                    <td>Handwriting Profile</td>
+                    <td>Good Clinical Practice Training</td>
+                    <td>Human Subjects Protection Training</td>
+                    <td>Site Related Training</td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                </tr>
+                <tr class="data">
+                    <td></td>
+                    <td>Primary Coordinator</td>
+                    <td class="null"></td>
+                    <td class="{{ site.primary_coordinator.cv.class }}">{{ site.primary_coordinator.cv.value }}</td>
+                    <td class="{{ site.primary_coordinator.doa.class }}">{{ site.primary_coordinator.doa.value }}</td>
+                    <td class="{{ site.primary_coordinator.license.class }}">{{ site.primary_coordinator.license.value }}</td>
+                    <td class="{{ site.primary_coordinator.fdf.class }}">{{ site.primary_coordinator.fdf.value }}</td>
+                    <td class="{{ site.primary_coordinator.hand_prof.class }}">{{ site.primary_coordinator.hand_prof.value }}</td>
+                    <td class="{{ site.primary_coordinator.gcp.class }}">{{ site.primary_coordinator.gcp.value }}</td>
+                    <td class="{{ site.primary_coordinator.hsp.class }}">{{ site.primary_coordinator.hsp.value }}</td>
+                    <td class="{{ site.primary_coordinator.training.class }}">{{ site.primary_coordinator.training.value }}</td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td class="null"></td>
+                    <td>CV</td>
+                    <td>DOA</td>
+                    <td>License</td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td>Good Clinical Practice Training</td>
+                    <td>Human Subjects Protection Training</td>
+                    <td>Site Related Training</td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                </tr>
+                <tr class="data">
+                    <td></td>
+                    <td>Pharmacist</td>
+                    <td class="null"></td>
+                    <td class="{{ site.primary_dispensing_pharmacist.cv.class }}">{{ site.primary_dispensing_pharmacist.cv.value }}</td>
+                    <td class="{{ site.primary_dispensing_pharmacist.doa.class }}">{{ site.primary_dispensing_pharmacist.doa.value }}</td>
+                    <td class="{{ site.primary_dispensing_pharmacist.license.class }}">{{ site.primary_dispensing_pharmacist.license.value }}</td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="{{ site.primary_dispensing_pharmacist.gcp.class }}">{{ site.primary_dispensing_pharmacist.gcp.value }}</td>
+                    <td class="{{ site.primary_dispensing_pharmacist.hsp.class }}">{{ site.primary_dispensing_pharmacist.hsp.value }}</td>
+                    <td class="{{ site.primary_dispensing_pharmacist.training.class }}">{{ site.primary_dispensing_pharmacist.training.value }}</td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                </tr>
+                <tr class="data">
+                    <td></td>
+                    <td>Site Activated</td>
+                    <td>{{ site.start_to_finish_duration }}</td>
+                    <td>{{ site.open_date }}</td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                    <td class="null"></td>
+                </tr>
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% if siteCompletionData %}
+<div id="activation_completion_report" style="display:none">
+    <div class="row">
+        <button class="btn btn-primary" onclick="$('#activation_completion_report').hide();$('#activation_sites').show();">Return to Site Details</button>
+    </div>
+    <table class='table dashboard sortable'>
+        <thead>
+            <tr>
+                <th>Site</th>
+                {% for area,areaDetails in siteCompletionData|first %}
+                    <th>{{ area }}</th>
+                {% endfor %}
+                <th>Total Completion</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for siteName,thisSite in siteCompletionData %}
+                <tr>
+                    {% set totalPercent = 0 %}
+                    <td>{{ siteName }}</td>
+                    {% for thisArea in thisSite %}
+                        {% set totalPercent = totalPercent + thisArea["percent"] %}
+                        <td>{{ thisArea["percent"] }}%</td>
+                    {% endfor %}
+                    <td>{{ (totalPercent / thisSite|length)|round }}%</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}

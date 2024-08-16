@@ -11,7 +11,6 @@ $mySitesData = $module->getMySiteData();
 $siteStartupData = $module->getSiteStartupData();
 $module->updateAllSitesData($allSitesData['sites'], $siteStartupData);
 $authorized = $module->user->authorized;
-
 // prepare site names for Screening Log Report dropdown
 $site_names = [];
 if ($authorized == 3) {
