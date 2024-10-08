@@ -722,6 +722,11 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		// effectively removing keys and keeping values in array
 		foreach ($sites as $site) {
 			$data->sites[] = $site;
+
+			// Ensure $data->totals[1] and 'screened' are initialized
+			$data->totals[1] = $data->totals[1] ?? new stdClass();
+			$data->totals[1]->screened = $data->totals[1]->screened ?? 0;
+
 			$data->totals[1]->screened += $site->screened;
 		}
 
