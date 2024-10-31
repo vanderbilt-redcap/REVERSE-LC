@@ -252,7 +252,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$this->uad_data = $uad_data[0];
 				$this->uad_data->role = $this->uad_data->$rolField;
 				if(!empty($rights['group_id'])) {
-					$DAGs = (array)$this->getDAGs();
+					$DAGs = (array)$this->getDAGs($uadProject);
 					$this->uad_data->dag_group_name = $DAGs[$rights['group_id']]->unique;
 				}
 			}
@@ -419,7 +419,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			// If role starts with "VCC" give total access
 			if (strpos($userRights, "VCC") === 0) {
 				$this->user->authorized = 3; //
-				$this->user->dashboard == 1;
+				$this->user->dashboard  = 1;
 				return;
 			} else {
 				$this->user->authorized = false;
@@ -429,7 +429,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			$this->user = new stdClass();
 			$this->user->authorized = false;
 			return;
-		} else {
+		} elseif (empty($this->user->authorized)) { //If this user has not been authorized yet.
 			$userRole    = $this->user->role;
 			$accessLevel = $this->getAccessLevelByRole($userRole);
 			$this->user->authorized = $accessLevel;
@@ -722,6 +722,11 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		// effectively removing keys and keeping values in array
 		foreach ($sites as $site) {
 			$data->sites[] = $site;
+
+			// Ensure $data->totals[1] and 'screened' are initialized
+			$data->totals[1] = $data->totals[1] ?? new stdClass();
+			$data->totals[1]->screened = $data->totals[1]->screened ?? 0;
+
 			$data->totals[1]->screened += $site->screened;
 		}
 
