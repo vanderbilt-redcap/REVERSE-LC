@@ -82,7 +82,8 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
         'sda_a4d7',
         'sda_a4d8',
         'sda_a4d9',
-        'sda_a4d10'
+        'sda_a4d10',
+		'enroll_yn'
 	];
 	public $personnel_roles = [
 		'PI',
@@ -277,9 +278,8 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			];
 			$edc_data = json_decode(\REDCap::getData($params));
 			$projectDags = $this->getDAGs($project_id);
-
 			// add dag and dag_name property to each record
-			foreach ($edc_data as $record) {
+			foreach ($edc_data as $record) { 
 				foreach($projectDags as $groupId => $thisDag) {
 				    if($thisDag->unique == $record->redcap_data_access_group) {
                         $record->dag = $groupId;
@@ -324,6 +324,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			$this->getScreeningData();
 		}
 		$inclusionData = [];
+		$total = 0;
 		foreach ($this->screening_data as $screening_rid => $screening_record) {
 			$dag = $screening_record->redcap_data_access_group;
 			if (!isset($inclusionData[$dag])) {
@@ -337,6 +338,28 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		
 		$inclusionData["_total"] = $total;
 		return $inclusionData;
+	}
+
+	public function getConsentedData() 
+	{
+		if (!$this->screening_data) {
+			$this->getScreeningData();
+		}
+		$consentedData = [];
+		$total = 0;
+		foreach ($this->screening_data as $screening_rid => $screening_record) {
+			$dag = $screening_record->redcap_data_access_group;
+			if (!isset($consentedData[$dag])) {
+				$consentedData[$dag] = 0;
+			}
+			if ($screening_record->enroll_yn == '1') {
+				$total++;
+				$consentedData[$dag]++;
+			}
+		}
+		
+		$consentedData["_total"] = $total;
+		return $consentedData;
 	}
 
 	private function getRegulatoryData($projectId = false) 
@@ -574,6 +597,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		$this->getDAGs();
 		$this->getRecords();
 		$inclusionData = $this->getInclusionData();
+		$consentedData = $this->getConsentedData();
 		$reg_data = $this->getRegulatoryData();
 		
 		$data = new \stdClass();
@@ -584,9 +608,10 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				"lpe": "-",
 				"screened": "-",
 				"eligible": "-",
-				"randomized": 1600,
+				"randomized": 550,
 				"baricitinib": "0",
-				"treated": 1600
+				"treated": 1600,
+				"enroll_yn":"0"
 			},
 			{
 				"name": "Current Enrolled",
@@ -596,12 +621,14 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				"eligible": "0",
 				"randomized": "0",
 				"baricitinib": "0",
-				"treated": "0"
+				"treated": "0",
+				"enroll_yn":' . $consentedData['_total'] . '
 			}
 		]');
 		
 		// create temporary sites container
 		$sites = new \stdClass();
+
 		foreach ($this->records as $record) {
 			//Ignore the record if doesn't have a DAG
 			if (!$patient_dag = $record->dag)
@@ -622,7 +649,10 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				if (isset($inclusionData[$site->dag])) {
 					$site->screened = $inclusionData[$site->dag];
 				}
-				
+				$site->enroll_yn = 0; 
+				if (isset($consentedData[$site->dag])) {
+					$site->enroll_yn = $consentedData[$site->dag];
+				}
 				$site->eligible = 0;
 				$site->randomized = 0;
                 $site->baricitinib = 0;
@@ -654,7 +684,6 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
             ) {
 				$data->totals[1]->eligible++;
 				$site->eligible++;
-				
 			}
 			// Randomized
 			if ($record->randomization_arm != '') {
@@ -716,20 +745,9 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$data->totals[1]->treated++;
 				$site->treated++;
 			}
-		}
-		
-		// site objects updated with patient data, dump into $data->sites
-		// effectively removing keys and keeping values in array
-		foreach ($sites as $site) {
 			$data->sites[] = $site;
-
-			// Ensure $data->totals[1] and 'screened' are initialized
-			$data->totals[1] = $data->totals[1] ?? new stdClass();
-			$data->totals[1]->screened = $data->totals[1]->screened ?? 0;
-
-			$data->totals[1]->screened += $site->screened;
-		}
-
+		}	
+		
 		// sort all sites, randomized descending
 		if (!function_exists(__NAMESPACE__ . '\sortAllSitesData')) {
 			function sortAllSitesData($a, $b) {
@@ -739,8 +757,9 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			}
 		}
 		
-		// return
+		// return	
 		$this->all_sites_data = $data;
+
 		return json_decode(json_encode($this->all_sites_data), true);
 	}
 
