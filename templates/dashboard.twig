@@ -45,14 +45,12 @@
 							<th>Screened</th>
 							<th>Eligible</th>
 							<th>Randomized</th>
-							<th>Treated</th>
-							<th>Baricitinib</th>
+							<th>Consented</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr class="first_row">
 							<td>Entire Project</td>
-							<td></td>
 							<td></td>
 							<td></td>
 							<td></td>
@@ -70,13 +68,11 @@
 								<td>{{ totalDetails["screened"] }}</td>
 								<td>{{ totalDetails["eligible"] }}</td>
 								<td>{{ totalDetails["randomized"] }}</td>
-								<td>{{ totalDetails["treated"] }}</td>
-								<td>{{ totalDetails["baricitinib"] }}</td>
+								<td>{{ totalDetails["enroll_yn"] }}</td>
 							</tr>
 						{% endfor %}
 						<tr class="first_row">
 							<td>By Site</td>
-							<td></td>
 							<td></td>
 							<td></td>
 							<td></td>
@@ -94,8 +90,7 @@
 								<td>{{ siteDetails["screened"] }}</td>
 								<td>{{ siteDetails["eligible"] }}</td>
 								<td>{{ siteDetails["randomized"] }}</td>
-								<td>{{ siteDetails["treated"] }}</td>
-								<td>{{ siteDetails["baricitinib"] }}</td>
+								<td>{{ siteDetails["enroll_yn"] }}</td>
 							</tr>
 						{% endfor %}
 					</tbody>
