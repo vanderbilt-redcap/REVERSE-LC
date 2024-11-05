@@ -614,7 +614,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				"enroll_yn":"0"
 			},
 			{
-				"name": "Current Enrolled",
+				"name": "Cumulative across all sites",
 				"fpe": "-",
 				"lpe": "-",
 				"screened": ' . $inclusionData['_total'] . ',
