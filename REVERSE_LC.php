@@ -614,7 +614,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				"enroll_yn":"0"
 			},
 			{
-				"name": "Current Enrolled",
+				"name": "Cumulative across all sites",
 				"fpe": "-",
 				"lpe": "-",
 				"screened": ' . $inclusionData['_total'] . ',
@@ -745,8 +745,13 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$data->totals[1]->treated++;
 				$site->treated++;
 			}
-			$data->sites[] = $site;
 		}	
+
+		// site objects updated with patient data, dump into $data->sites
+		// effectively removing keys and keeping values in array
+		foreach ($sites as $site) {
+			$data->sites[] = $site;
+		}
 		
 		// sort all sites, randomized descending
 		if (!function_exists(__NAMESPACE__ . '\sortAllSitesData')) {
