@@ -32,7 +32,6 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		'dm_sex',
 		'dm_race',
 		'transfusion_datetime',
-		'randomization_date',
 		'randomization_dttm',
 		'elig_app',
 		'randomization',
@@ -662,7 +661,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			}
 			// // update columns using patient data
 			// FPE and LPE
-			$enroll_date = $record->randomization_date;
+			$enroll_date = $record->randomization_dttm;
 
 			if (!empty($enroll_date)) {
 				if ($site->fpe == '-') {
@@ -878,11 +877,11 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			}
 			
 			$site_match_or_null = $site === null ? true : $record->redcap_data_access_group == $site;
-			if (!empty($record->randomization_date) and $site_match_or_null) {
-				if (strtotime($record->randomization_date) < strtotime($first_date))
-					$first_date = date("Y-m-d", strtotime($record->randomization_date));
-				if (strtotime($record->randomization_date) > strtotime($last_date))
-					$last_date = date("Y-m-d", strtotime($record->randomization_date));
+			if (!empty($record->randomization_dttm) and $site_match_or_null) {
+				if (strtotime($record->randomization_dttm) < strtotime($first_date))
+					$first_date = date("Y-m-d", strtotime($record->randomization_dttm));
+				if (strtotime($record->randomization_dttm) > strtotime($last_date))
+					$last_date = date("Y-m-d", strtotime($record->randomization_dttm));
 			}
 			$enroll_data_to_consider[] = $record;
 		}
@@ -919,7 +918,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			
 			foreach ($enroll_data_to_consider as $record) {
 				// making sure the H:m part of the d-m-Y H:m field doesn't cause us to miscount
-				$ts_x = strtotime(date("Y-m-d", strtotime($record->randomization_date)));
+				$ts_x = strtotime(date("Y-m-d", strtotime($record->randomization_dttm)));
 				$site_match_or_null = $site === null ? true : $record->redcap_data_access_group == $site;
 				if ($ts_a <= $ts_x and $ts_x <= $ts_b and $site_match_or_null) {
                     $randomized_this_week++;
