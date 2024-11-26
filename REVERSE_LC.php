@@ -29,10 +29,12 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		'redcap_data_access_group',
         'dag',
         'dag_name',
-		'sex',
-		'race_ethnicity',
+		'dm_sex',
+		'dm_race',
 		'transfusion_datetime',
 		'randomization_date',
+		'randomization_dttm',
+		'elig_app',
 		'randomization',
 		'append_d_calc',
 		'append_e_calc',
@@ -503,7 +505,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 						}
 
 						## Special shortening for certain fields
-						if($field == "sex") {
+						if($field == "dm_sex") {
 							$record->$field = substr($record->$field, 0, 1);
 						}
 					}
@@ -562,9 +564,9 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				if ($this->user->authorized == '3') {
 					$row->site = $record->dag_name;
 				}
-				$row->sex = $record->sex;
-				$row->race = $record->race_ethnicity;
-				$row->enrolled = $record->randomization_date;
+				$row->dm_sex = $record->dm_sex;
+				$row->race = $record->dm_race;
+				$row->enrolled = $record->randomization_dttm;
 				$row->treated = "";
 				// convert transfusion_datetime from Y-m-d H:m to Y-m-d
 				if (!empty($record->transfusion_datetime))
@@ -677,16 +679,12 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				}
 			}
 			// Eligible
-			if ($record->append_d_calc == 1 ||
-                $record->append_e_calc == 1 ||
-                $record->append_f_calc == 1 ||
-                $record->append_g_calc == 1
-            ) {
+			if ($record->elig_app == 1) {
 				$data->totals[1]->eligible++;
 				$site->eligible++;
 			}
 			// Randomized
-			if ($record->randomization_arm != '') {
+			if ($record->randomization != '') {
 				$data->totals[1]->randomized++;
     
 				$site->randomized++;
@@ -781,7 +779,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			}
 		}
 	}
-	public function getScreeningLogData($site = null) {
+	public function getScreeningLogData($site = null, $first_day_of_week = 0) {
 		// determine earliest screened date (upon which weeks array will be based)
 		$screening_data = $this->getScreeningData();
 		$first_date = date("Y-m-d");
@@ -798,11 +796,14 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		if (strtotime($last_date) == 0)
 			$last_date = $first_date;
 		
-		// determine date of Monday on or before first_date found
-		$day_of_week = date("N", strtotime($first_date));
+		// Determine first day of the week based on $first_day_of_week
+		$day_of_week = date("w", strtotime($first_date)); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 		$rewind_x_days = $day_of_week - 1;
-		$first_monday = date("Y-m-d", strtotime("-$rewind_x_days days", strtotime($first_date)));
-		
+		$rewind_x_days = $day_of_week >= $first_day_of_week 
+        				? $day_of_week - $first_day_of_week 
+        				: $day_of_week + (7 - $first_day_of_week);
+
+		$first_week_start = date("Y-m-d", strtotime("-$rewind_x_days days", strtotime($first_date)));
 		// make report data object and rows
 		$screening_log_data = new \stdClass();
 		$screening_log_data->rows = [];
@@ -813,9 +814,9 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			
 			// determine week boundary dates
 			$day_offset1 = ($iterations) * 7;
-			$day_offset2 = $day_offset1 + 4;
-			$date1 = date("Y-m-d", strtotime("+$day_offset1 days", strtotime($first_monday)));
-			$date2 = date("Y-m-d", strtotime("+$day_offset2 days", strtotime($first_monday)));
+			$day_offset2 = $day_offset1 + 6;
+			$date1 = date("Y-m-d", strtotime("+$day_offset1 days", strtotime($first_week_start)));
+			$date2 = date("Y-m-d", strtotime("+$day_offset2 days", strtotime($first_week_start)));
 			
 			$row = [];
 			$row[0] = date("n/j/y", strtotime($date1)) . "-" . date("n/j/y", strtotime($date2));
