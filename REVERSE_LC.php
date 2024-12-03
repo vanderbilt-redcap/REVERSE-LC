@@ -678,6 +678,12 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				}
 			}
 			// Eligible
+			if(isset($_GET['debug'])) {
+				echo '<pre>';
+				var_dump($record);
+				echo '</pre>';
+			}
+			
 			if ($record->elig_app == 1) {
 				$data->totals[1]->eligible++;
 				$site->eligible++;
