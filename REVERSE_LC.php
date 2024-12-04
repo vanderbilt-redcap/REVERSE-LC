@@ -476,7 +476,12 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			$this->getEDCData($project_id);
 			// iterate over edc_data, collating data into record objects
 			$temp_records_obj = new \stdClass();
-			foreach ($this->edc_data as $record_event) {
+			foreach ($this->edc_data as $record_event) { 
+				if(isset($_GET['debug2'])) {
+					echo '<pre>';
+					var_dump($record_event);
+					echo '</pre>';
+				}
 				// establish $record and $rid
 				$id_field_name = $this->id_field_name;
 				$rid = $record_event->$id_field_name;
@@ -678,7 +683,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				}
 			}
 			// Eligible
-			if(isset($_GET['debug'])) {
+			if(isset($_GET['debug1'])) {
 				echo '<pre>';
 				var_dump($record);
 				echo '</pre>';
