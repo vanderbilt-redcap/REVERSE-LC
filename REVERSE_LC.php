@@ -279,6 +279,13 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			];
 			$edc_data = json_decode(\REDCap::getData($params));
 			$projectDags = $this->getDAGs($project_id);
+
+			if(isset($_GET['debug3'])) {
+				echo '<pre>';
+				var_dump($params);
+				var_dump($projectDags);
+				echo '</pre>';
+			}
 			// add dag and dag_name property to each record
 			foreach ($edc_data as $record) { 
 				if(isset($_GET['debug3'])) {
