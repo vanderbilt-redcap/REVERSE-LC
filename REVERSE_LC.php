@@ -283,23 +283,13 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			if(isset($_GET['debug3'])) {
 				echo '<pre>';
 				var_dump($params);
-				var_dump($projectDags);
+				var_dump($edc_data);
 				echo '</pre>';
 			}
+
 			// add dag and dag_name property to each record
 			foreach ($edc_data as $record) { 
-				if(isset($_GET['debug3'])) {
-					echo '<pre>';
-					var_dump($record);
-					echo '</pre>';
-				}
 				foreach($projectDags as $groupId => $thisDag) {
-
-					if(isset($_GET['debug3'])) {
-						echo '<pre>';
-						var_dump($thisDag->unique);
-						echo '</pre>';
-					}
 				    if($thisDag->unique == $record->redcap_data_access_group) {
                         $record->dag = $groupId;
                         $record->dag_name = $thisDag->display;
