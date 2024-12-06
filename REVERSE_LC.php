@@ -274,18 +274,10 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				'project_id' => $project_id,
 				'return_format' => 'json',
 				'fields' => $this->record_fields,
-				//'events' => (array) $this->event_ids,
                 'exportDataAccessGroups' => true
 			];
 			$edc_data = json_decode(\REDCap::getData($params));
 			$projectDags = $this->getDAGs($project_id);
-
-			if(isset($_GET['debug3'])) {
-				echo '<pre>';
-				var_dump($params);
-				var_dump($edc_data);
-				echo '</pre>';
-			}
 
 			// add dag and dag_name property to each record
 			foreach ($edc_data as $record) { 
@@ -485,11 +477,6 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			// iterate over edc_data, collating data into record objects
 			$temp_records_obj = new \stdClass();
 			foreach ($this->edc_data as $record_event) { 
-				if(isset($_GET['debug2'])) {
-					echo '<pre>';
-					var_dump($record_event);
-					echo '</pre>';
-				}
 				// establish $record and $rid
 				$id_field_name = $this->id_field_name;
 				$rid = $record_event->$id_field_name;
@@ -691,12 +678,6 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				}
 			}
 			// Eligible
-			if(isset($_GET['debug1'])) {
-				echo '<pre>';
-				var_dump($record);
-				echo '</pre>';
-			}
-			
 			if ($record->elig_app == 1) {
 				$data->totals[1]->eligible++;
 				$site->eligible++;
