@@ -278,7 +278,6 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			];
 			$edc_data = json_decode(\REDCap::getData($params));
 			$projectDags = $this->getDAGs($project_id);
-
 			// add dag and dag_name property to each record
 			foreach ($edc_data as $record) { 
 				foreach($projectDags as $groupId => $thisDag) {
@@ -476,7 +475,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			$this->getEDCData($project_id);
 			// iterate over edc_data, collating data into record objects
 			$temp_records_obj = new \stdClass();
-			foreach ($this->edc_data as $record_event) { 
+			foreach ($this->edc_data as $record_event) {
 				// establish $record and $rid
 				$id_field_name = $this->id_field_name;
 				$rid = $record_event->$id_field_name;
