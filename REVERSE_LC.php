@@ -274,7 +274,6 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				'project_id' => $project_id,
 				'return_format' => 'json',
 				'fields' => $this->record_fields,
-				'events' => (array) $this->event_ids,
                 'exportDataAccessGroups' => true
 			];
 			$edc_data = json_decode(\REDCap::getData($params));
