@@ -330,7 +330,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			if (!isset($inclusionData[$dag])) {
 				$inclusionData[$dag] = 0;
 			}
-			if ($screening_record->continue_yn == '1' && $screening_record->exclude_yn != '1') {
+			if ($screening_record->continue_yn == '1' || $screening_record->continue_yn == '99') {
 				$total++;
 				$inclusionData[$dag]++;
 			}

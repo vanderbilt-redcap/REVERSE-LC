@@ -5,7 +5,7 @@ Implements the user dashboard for REVERSE_LC REDCap projects!
 ## Participant Status Definitions
 
 1. Screened
-Criteria: [continue_yn] == 1 && [exclude_yn] != 1
+Criteria: [continue_yn] == '1' || [continue_yn] == '99'
 
 2. Enrolled
 Criteria: [randomization_dttm] != ''
