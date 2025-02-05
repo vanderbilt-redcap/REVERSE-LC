@@ -1,6 +1,8 @@
 <?php
 define("SCREENING_LOG_DATA_AJAX_URL", $module->getUrl('ajax/getScreeningLogData.php'));
 define("ENROLLMENT_CHART_DATA_AJAX_URL", $module->getUrl('ajax/getEnrollmentChartData.php'));
+
+require_once(__DIR__."/vendor/autoload.php");
 $loader = new \Twig\Loader\FilesystemLoader(__DIR__."/templates");
 $twig = new \Twig\Environment($loader);
 
@@ -20,7 +22,7 @@ if ($authorized == 3) {
 } else {
 	$site_names[] = $module->user->dag_group_name;
 }
-	
+
 $randArmlabels        = $module->getFieldLabelMapping('randomization');
 $screeningLogData     = $module->getScreeningLogData();
 $enrollmentChartData  = $module->getEnrollmentChartData();
@@ -49,5 +51,8 @@ echo $template->render([
 	"folderImageSource"    => $folderImageSource,
 	"siteStartupData"      => $siteStartupData,
     "siteCompletionData"   => $siteCompletionData,
-    'randArmLabels'        => $randArmlabels
+    'randArmLabels'        => $randArmlabels,
+	"css_path"              => $module->getUrl("css/style.css"),
+	"js_path_1"            => $module->getUrl("js/dashboard.js"),
+	"logo_link"            => $module->getUrl("images/main_logo.png")
 ]);

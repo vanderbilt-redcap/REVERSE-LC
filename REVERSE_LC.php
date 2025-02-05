@@ -84,7 +84,8 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
         'sda_a4d8',
         'sda_a4d9',
         'sda_a4d10',
-		'enroll_yn'
+		'enroll_yn',
+		"record_id"
 	];
 	public $personnel_roles = [
 		'PI',
@@ -129,24 +130,11 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
         "site_add_ready",
         "site_add"
     ];
-	
+
+	public $id_field_name = "record_id";
+
 	private const MAX_FOLDER_NAME_LEN = 60;		// folder names truncated after n characters
 
-	public function __construct() {
-		parent::__construct();
-		define("CSS_PATH_1",$this->getUrl("css/style.css"));
-		define("CSS_MAIN_ACTIVE", $this->getUrl("css/mainActive.css"));
-
-		define("JS_PATH_1",$this->getUrl("js/dashboard.js"));
-		define("LOGO_LINK", $this->getUrl("images/main_logo.png"));
-
-		require_once(__DIR__."/vendor/autoload.php");
-		
-		$id_field_name = "record_id";
-		$this->id_field_name = $id_field_name;
-		$this->record_fields[] = $id_field_name;
-	}
-	
 	// LOW LEVEL methods
 	public function getEventIDs() {
 		if (!isset($this->event_ids)) {
@@ -156,7 +144,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			$event_ids->screening = $this->getProjectSetting('screening_event');
 			$this->event_ids = $event_ids;
 		}
-		
+
 		return $this->event_ids;
 	}
 
@@ -166,7 +154,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$edcProjectId = $this->getProjectSetting('edc_project');
 		        $project_id   = $edcProjectId;
             }
-			
+
 			// create global $Proj that REDCap class uses to generate DAG info
 			$EDCProject = new \Project($project_id);
 			$dags_unique = $EDCProject->getUniqueGroupNames();
@@ -176,18 +164,18 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				// get display name
 				if (empty($display_name = $dags_display[$group_id]))
 					$display_name = "";
-				
+
 				// add entry with unique and display name with group_id as key
 				$dags->$group_id = new \stdClass();
 				$dags->$group_id->unique = $unique_name;
 				$dags->$group_id->display = $display_name;
-				
+
 				unset($display_name);
 			}
-			
+
 			$this->dags = $dags;
 		}
-		
+
 		return $this->dags;
 	}
 	public function getFieldLabelMapping($fieldName = false) {
@@ -198,7 +186,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		if ($Proj->metadata[$fieldName]['element_type'] == 'calc') {
 			return false;
 		}
-		
+
 		if(!isset($this->mappings)) {
 			$this->mappings = [];
 			foreach($this->record_fields as $thisField) {
@@ -236,7 +224,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			$thisUser   = $this->getUser();
 			$username   = $thisUser->getUsername();
 			$rolField   = $this->getProjectSetting("role_field",$project_id);
-			
+
 			$params = [
 				'project_id' => $uadProject,
 				'return_format' => 'json',
@@ -248,7 +236,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				'filterLogic' => '[user_name] = "'.$username.'"'
 			];
 			$uad_data = json_decode(\REDCap::getData($params));
-			
+
 			if(!empty($uad_data)) {
 				$rights = $thisUser->getRights();
 				$this->uad_data = $uad_data[0];
@@ -279,7 +267,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			$edc_data = json_decode(\REDCap::getData($params));
 			$projectDags = $this->getDAGs($project_id);
 			// add dag and dag_name property to each record
-			foreach ($edc_data as $record) { 
+			foreach ($edc_data as $record) {
 				foreach($projectDags as $groupId => $thisDag) {
 				    if($thisDag->unique == $record->redcap_data_access_group) {
                         $record->dag = $groupId;
@@ -290,11 +278,11 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			}
 			$this->edc_data = $edc_data;
 		}
-		
+
 		return $this->edc_data;
 	}
 
-    public function getScreeningData($projectId = false) 
+    public function getScreeningData($projectId = false)
 	{
         if(!$this->screening_data) {
             if(!$projectId) {
@@ -309,7 +297,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				"return_format" => "json",
                 'exportDataAccessGroups' => true
             ]));
-			
+
 			$screeningProject = new \Project($screeningProjectId);
 			preg_match_all("/<li>(.+)$/m", $screeningProject->metadata['excl_desc_4']['element_label'], $labels);
 			$this->excl_desc_labels = $labels[1];
@@ -318,7 +306,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
         return $this->screening_data;
     }
 
-	public function getInclusionData() 
+	public function getInclusionData()
 	{
 		if (!$this->screening_data) {
 			$this->getScreeningData();
@@ -335,12 +323,12 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$inclusionData[$dag]++;
 			}
 		}
-		
+
 		$inclusionData["_total"] = $total;
 		return $inclusionData;
 	}
 
-	public function getConsentedData() 
+	public function getConsentedData()
 	{
 		if (!$this->screening_data) {
 			$this->getScreeningData();
@@ -357,19 +345,19 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$consentedData[$dag]++;
 			}
 		}
-		
+
 		$consentedData["_total"] = $total;
 		return $consentedData;
 	}
 
-	private function getRegulatoryData($projectId = false) 
+	private function getRegulatoryData($projectId = false)
 	{
 		if (!$this->regulatory_data) {
 			if(!$projectId) {
 				$edcProjectId = $this->getProjectSetting('edc_project');
                 $projectId    = $edcProjectId;
 			}
-			
+
             $regulatoryProjectId = $this->getProjectSetting("site_regulation_project", $projectId);
 			$this->regulatory_data = json_decode(\REDCap::getData([
                 "project_id" => $regulatoryProjectId,
@@ -377,13 +365,13 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
                 'exportDataAccessGroups' => true,
 				"fields" => ["record_id", "edc_dag_id", "site_international"]
             ]));
-			
+
 			$this->regulatory_data['domestic_sites'] = [];
 			$this->regulatory_data['international_sites'] = [];
-			
+
 			$this->regulatory_data['domestic_dag_ids'] = [];
 			$this->regulatory_data['international_dag_ids'] = [];
-			
+
 			foreach ($this->regulatory_data as $reg_record) {
 				if ($reg_record->site_international == '1') {
 					$this->regulatory_data['international_sites'][] = $reg_record->record_id;
@@ -400,7 +388,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
         }
         return $this->regulatory_data;
 	}
-	
+
 	public function getDashboardUser()
 	{
 		if (!isset($this->user)) {
@@ -411,7 +399,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 	}
 
 	// HIGHER LEVEL methods
-	public function authorizeUser() 
+	public function authorizeUser()
 	{
 		$this->getDashboardUser();
 
@@ -464,7 +452,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		if (!isset($this->records)) {
 			if($_GET['TESTING']) {
 				$this->records = json_decode(file_get_contents(__DIR__."/tests/test_data/records.json"),true);
-				
+
 				return $this->records;
 			}
 
@@ -481,21 +469,21 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$rid = $record_event->$id_field_name;
 				if (!$record = $temp_records_obj->$rid) {
 					$record = new \stdClass();
-					
+
 					// set empty fields
 					foreach ($this->record_fields as $field) {
 						$record->$field = "";
 					}
-					
+
 					$record->$id_field_name = $rid;
 					$temp_records_obj->$rid = $record;
 				}
-				
+
 				// set non-empty fields
 				foreach ($this->record_fields as $field) {
 					if (!empty($record_event->$field)) {
 						$labels = $this->getFieldLabelMapping($field);
-						
+
 						if($labels != false) {
 							$record->$field = $labels[$record_event->$field];
 						} else {
@@ -509,13 +497,13 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 					}
 				}
 			}
-			
+
 			$records = [];
 			foreach ($temp_records_obj as $record) {
 				if (!empty($record->redcap_data_access_group))
 					$records[] = $record;
 			}
-			
+
 			$this->records = $records;
 		}
 		return $this->records;
@@ -538,12 +526,12 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		if($_GET['TESTING']) {
 			return json_decode(file_get_contents(__DIR__."/tests/test_data/site_a_data.json"),true);
 		}
-		
+
 		$this->getDAGs();
 		$this->getDashboardUser();
 		$this->getRecords();
 		$this->authorizeUser();
-		
+
 		//Access level pending
 		if ($this->user->authorized == false or $this->user->authorized == '1') {
 			$this->my_site_data = false;
@@ -573,7 +561,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$site_data->rows[] = $row;
 			}
 		}
-		
+
 		// sort site level data
 		if (!function_exists(__NAMESPACE__ . '\sortSiteData')) {
 			function sortSiteData($a, $b) {
@@ -583,13 +571,13 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			}
 		}
 		uasort($site_data->rows, __NAMESPACE__ . '\sortSiteData');
-		
+
 		// return
 		$this->my_site_data = $site_data;
 		return json_decode(json_encode($this->my_site_data), true);
 	}
 
-	public function getAllSitesData() 
+	public function getAllSitesData()
 	{
 		if($_GET['TESTING']) {
 			return json_decode(file_get_contents(__DIR__."/tests/test_data/all_sites_data.json"),true);
@@ -599,7 +587,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		$inclusionData = $this->getInclusionData();
 		$consentedData = $this->getConsentedData();
 		$reg_data = $this->getRegulatoryData();
-		
+
 		$data = new \stdClass();
 		$data->totals = json_decode('[
 			{
@@ -625,7 +613,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				"enroll_yn":' . $consentedData['_total'] . '
 			}
 		]');
-		
+
 		// create temporary sites container
 		$sites = new \stdClass();
 
@@ -641,15 +629,15 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$site->name = $record->dag_name;
 				$site->dag = $record->redcap_data_access_group;
 				$site->group_id = $record->dag;
-				
+
 				$site->fpe = '-';
 				$site->lpe = '-';
-				
+
 				$site->screened = 0;
 				if (isset($inclusionData[$site->dag])) {
 					$site->screened = $inclusionData[$site->dag];
 				}
-				$site->enroll_yn = 0; 
+				$site->enroll_yn = 0;
 				if (isset($consentedData[$site->dag])) {
 					$site->enroll_yn = $consentedData[$site->dag];
 				}
@@ -684,7 +672,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			// Randomized
 			if ($record->randomization != '') {
 				$data->totals[1]->randomized++;
-    
+
 				$site->randomized++;
                 if ($record->randomization_arm === "Baricitinib") {
                     $data->totals[1]->baricitinib++;
@@ -741,14 +729,14 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$data->totals[1]->treated++;
 				$site->treated++;
 			}
-		}	
+		}
 
 		// site objects updated with patient data, dump into $data->sites
 		// effectively removing keys and keeping values in array
 		foreach ($sites as $site) {
 			$data->sites[] = $site;
 		}
-		
+
 		// sort all sites, randomized descending
 		if (!function_exists(__NAMESPACE__ . '\sortAllSitesData')) {
 			function sortAllSitesData($a, $b) {
@@ -757,14 +745,14 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				return $a->randomized < $b->randomized ? 1 : -1;
 			}
 		}
-		
-		// return	
+
+		// return
 		$this->all_sites_data = $data;
 
 		return json_decode(json_encode($this->all_sites_data), true);
 	}
 
-	public function updateAllSitesData(&$sites, $startup) 
+	public function updateAllSitesData(&$sites, $startup)
 	{
 		foreach ($sites as &$site) {
 			// Site Activation (date)
@@ -793,12 +781,12 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		}
 		if (strtotime($last_date) == 0)
 			$last_date = $first_date;
-		
+
 		// Determine first day of the week based on $first_day_of_week
 		$day_of_week = date("w", strtotime($first_date)); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 		$rewind_x_days = $day_of_week - 1;
-		$rewind_x_days = $day_of_week >= $first_day_of_week 
-        				? $day_of_week - $first_day_of_week 
+		$rewind_x_days = $day_of_week >= $first_day_of_week
+        				? $day_of_week - $first_day_of_week
         				: $day_of_week + (7 - $first_day_of_week);
 
 		$first_week_start = date("Y-m-d", strtotime("-$rewind_x_days days", strtotime($first_date)));
@@ -809,17 +797,17 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		$iterations = 0;
 		while (true) {
 			$screened_this_week = 0;
-			
+
 			// determine week boundary dates
 			$day_offset1 = ($iterations) * 7;
 			$day_offset2 = $day_offset1 + 6;
 			$date1 = date("Y-m-d", strtotime("+$day_offset1 days", strtotime($first_week_start)));
 			$date2 = date("Y-m-d", strtotime("+$day_offset2 days", strtotime($first_week_start)));
-			
+
 			$row = [];
 			$row[0] = date("n/j/y", strtotime($date1)) . "-" . date("n/j/y", strtotime($date2));
 			$row[0] = str_replace("\\", "", $row[0]);
-			
+
 			// count records that were screened this week
 			$ts_a = strtotime($date1);
 			$ts_b = strtotime("+24 hours", strtotime($date2));
@@ -831,14 +819,14 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 					$screened_this_week++;
 			}
 			$total_screened += $screened_this_week;
-			
+
 			$row[1] = $screened_this_week;
 			$row[2] = $total_screened;
-			
+
 			$screening_log_data->rows[] = $row;
-			
+
 			$iterations++;
-			
+
 			// see if the week row just created captures the last screened date
 			// if so, break here
 			$cutoff_timestamp = strtotime("+1 days", $ts_b);
@@ -849,11 +837,11 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		return $screening_log_data;
 	}
 
-	public function getEnrollmentChartData($options = null) 
+	public function getEnrollmentChartData($options = null)
 	{
 		// determine earliest screened date (upon which weeks array will be based)
 		// 2021-08-05 we're changing to count "Randomized" instead of "Enrolled"
-		
+
 		if (isset($options['site_dag'])) {
 			$site = $options['site_dag'];
 		}
@@ -874,7 +862,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			} elseif ($site_locality == "International" and $this->isSiteInternational($record->dag) === false) {
 				continue;
 			}
-			
+
 			$site_match_or_null = $site === null ? true : $record->redcap_data_access_group == $site;
 			if (!empty($record->randomization_dttm) and $site_match_or_null) {
 				if (strtotime($record->randomization_dttm) < strtotime($first_date))
@@ -886,12 +874,12 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		}
 		if (strtotime($last_date) == 0)
 			$last_date = $first_date;
-		
+
 		// determine date of sunday on or before first_date found
 		$day_of_week = date("N", strtotime($first_date));
 		$rewind_x_days = $day_of_week;
 		$first_sunday = date("Y-m-d", strtotime("-$rewind_x_days days", strtotime($first_date)));
-		
+
 		// make report data object and rows
 		$enrollment_chart_data = new \stdClass();
 		$enrollment_chart_data->rows = [];
@@ -906,15 +894,15 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			$day_offset2 = $day_offset1 + 6;
 			$date1 = date("Y-m-d", strtotime("+$day_offset1 days", strtotime($first_sunday)));
 			$date2 = date("Y-m-d", strtotime("+$day_offset2 days", strtotime($first_sunday)));
-			
+
 			$row = [];
 			$row[0] = date("n/j/y", strtotime($date1)) . "-" . date("n/j/y", strtotime($date2));
 			$row[0] = str_replace("\\", "", $row[0]);
-			
+
 			// count records that were screened this week
 			$ts_a = strtotime($date1);
 			$ts_b = strtotime($date2);
-			
+
 			foreach ($enroll_data_to_consider as $record) {
 				// making sure the H:m part of the d-m-Y H:m field doesn't cause us to miscount
 				$ts_x = strtotime(date("Y-m-d", strtotime($record->randomization_dttm)));
@@ -931,14 +919,14 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
                 }
             }
 			$cumulative_randomized += $randomized_this_week;
-			
+
 			$row[1] = $randomized_this_week;
 			$row[2] = $cumulative_randomized;
 			$row[3] = $cumulative_arms;
 			$enrollment_chart_data->rows[] = $row;
-			
+
 			$iterations++;
-			
+
 			// see if the week row just created captures the last screened date
 			// if so, break here
 			$cutoff_timestamp = strtotime("+1 days", $ts_b);
@@ -947,7 +935,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		}
         $cumulative_arms = array_filter($cumulative_arms);
 		$enrollment_chart_data->rows[] = ["Grand Total", $cumulative_randomized, $cumulative_randomized, $cumulative_arms];
-  
+
 		return $enrollment_chart_data;
 	}
 	public function getExclusionReportData() {
@@ -955,7 +943,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			// create data object
 			$exclusion_data = new \stdClass();
 			$exclusion_data->rows = [];
-			
+
 			// get labels, init exclusion counts
 			$screening_pid = $this->getProjectSetting('screening_project');
 			$labels = $this->excl_desc_labels;
@@ -963,14 +951,14 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			foreach ($labels as $i => $label) {
 				$exclusion_counts[$i] = 0;
 			}
-			
+
 			// iterate through screening records, summing exclusion reasons from [exclude_primary_reason]
 			$screening_data = $this->getScreeningData();
 			foreach ($screening_data as $record) {
 				// // use below if exclude_primary_reason is a dropdown field type
 				// if (!empty($record->exclude_primary_reason) and isset($exclusion_counts[$record->exclude_primary_reason]))
 					// $exclusion_counts[$record->exclude_primary_reason]++;
-				
+
 				// use below if exclude_primary_reason is a checkbox field type	//	can't think of a smarter way to do this
 				foreach($record as $field_name => $value) {
 					preg_match("/exclude_primary_reason___(\d*)/", $field_name, $match);
@@ -1055,13 +1043,13 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
                                 break;
 						}
 					}
-					
+
 					if (is_numeric($report_table_index)) {
 						$exclusion_counts[$report_table_index]++;
 					}
 				}
 			}
-			
+
 			// add rows to data object
 			foreach ($labels as $i => $label) {
 				$exclusion_data->rows[] = [
@@ -1097,82 +1085,82 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			}
 			$this->screen_fail_data = $screen_fail_data;
 		}
-		
+
 		return $this->screen_fail_data;
 	}
 	public function getHelpfulLinks() {
 		$link_settings = $this->getSubSettings('helpful_links_folders');
 		$links = [];
-		
+
 		foreach($link_settings as $i => $folder) {
 			foreach($folder['helpful_links'] as $link_info) {
 				// skip links with missing URL
 				if (empty($link_info['link_url'])) {
 					continue;
 				}
-				
+
 				$link = new \stdClass();
 				$link->url = $link_info['link_url'];
-				
+
 				// prepend http protocol text if missing to avoid pathing to ExternalModules/...
 				if (strpos($link->url, "http") === false) {
 					$link->url = "http://" . $link->url;
 				}
-				
+
 				if (empty($link_info['link_display'])) {
 					$link->display = $link->url;
 				} else {
 					$link->display = $link_info['link_display'];
 				}
-				
+
 				$link->folder_index = $i;
-				
+
 				$links[] = $link;
 			}
 		}
-		
+
 		return $links;
 	}
 	public function getHelpfulLinkFolders() {
 		$link_settings = $this->getSubSettings('helpful_links_folders');
-		
+
 		$folders = [];
 		foreach($link_settings as $i => $folder_info) {
 			$folder = new \stdClass();
-			
+
 			$folder->name = $folder_info['helpful_links_folder_text'];
 			if (empty($folder->name)) {
 				$folder->name = "Folder " . ($i + 1);
 			} elseif (strlen($folder->name) > $this::MAX_FOLDER_NAME_LEN) {
 				$folder->name = substr($folder->name, 0, $this::MAX_FOLDER_NAME_LEN) . "...";
 			}
-			
+
 			$folder->color = $folder_info['helpful_links_folder_color'];
 			$css_hex_color_pattern = "/#([[:xdigit:]]{3}){1,2}\b/";
 			if (!preg_match($css_hex_color_pattern, $folder->color)) {
 				// Ensures folders have a valid color
 				$folder->color = "#edebb4";
 			}
-			
+
 			// if $folder_info['helpful_links'] not array, throw exception
-			
+
 			$folder->linkCount = count($folder_info['helpful_links']);
 			if (!is_numeric($folder->linkCount)) {
 				$folder->linkCount = 0;
 			}
-			
+
 			$folders[] = $folder;
 		}
-		
+
 		return $folders;
 	}
-	
+
 	public function getVCCSiteStartUpFieldList($regulatoryPID) {
 		$reg_dd = json_decode(\REDCap::getDataDictionary($regulatoryPID, 'json'));
 		if (empty($reg_dd)) {
 			$this->addStartupError("The REVERSE-LC module couldn't get start-up fields -- fatal error trying to decode the Data Dictionary (json) for the regulatory project (PID: " . $regulatoryPID . ")", "danger");
 		}
-		
+
 		$field_names = [];
 		foreach($reg_dd as $field_info) {
 			$name = $field_info->field_name;
@@ -1180,40 +1168,40 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$field_names[] = $name;
 			}
 		}
-		
+
 		return $field_names;
 	}
 	public function getSiteStartupData() {
 		$startup_data = new \stdClass();
-		
+
 		// initialize array to collect any startup errors that may occur
 		$this->startup_errors = [];
 		$startup_data->dags = [];
-		
+
 		// get regulatory Project instance (for groups/DAGs data)
 		$regulatoryPID = $this->getProjectSetting('site_regulation_project');
 		if (empty($regulatoryPID)) {
 			$this->addStartupError("The REVERSE-LC module couldn't find a project ID for a corresponding regulatory project because the 'REVERSE_LC Site Regulation Project ID' setting is not configured. Please configure the module by selecting a regulatory project.", "danger");
 			return $startup_data;
 		}
-		
+
 		// return array of site objects, each with data used to build Site Activation tables
 		$activation_fields = $this->getVCCSiteStartUpFieldList($regulatoryPID);
 		if (empty($activation_fields)) {
 			$this->addStartupError("The REVERSE-LC module couldn't retrieve the list of fields in the VCC Site Start Up form (in the regulatory project)", "danger");
 		}
-		
+
 		// add extra field(s) useful for site activation tables
 		$activation_fields[] = $this->id_field_name;
 		$activation_fields[] = 'role';
 		$activation_fields[] = 'site_number';
-		
+
 		// these fields are used for the site activation table cells information/statuses
 		$activation_fields = array_merge($activation_fields, array_values($this->document_signoff_fields));
-		
+
 		// if stop is true for a record, don't select that record to be the role personnel for any role
 		$activation_fields[] = 'stop';
-		
+
 		// add form complete fields so we get all instances (even if instances are full of empty field values)
 		$activation_fields = array_merge($activation_fields, $this->personnel_form_complete_fields);
 		$params = [
@@ -1227,7 +1215,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		if (empty($data)) {
 			$this->addStartupError("Couldn't retrieve site activation data from regulatory project.", "danger");
 		}
-		
+
 		// separate data entries into sites[] and personnel[]
 		$startup_data->sites = [];
 		$startup_data->personnel = [];
@@ -1252,11 +1240,11 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			}
 		}
 		unset($data);
-		
+
 		$this->processStartupPersonnelData($startup_data->personnel, $startup_data->dags);
 		$this->processStartupSiteData($startup_data->sites, $startup_data->personnel);
 		$startup_data->errors = $this->startup_errors;
-		
+
 		return $startup_data;
 	}
 	public function calculateSiteProgress($siteStartupData) {
@@ -1354,7 +1342,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 	        "confirmed by vcc",
             "not applicable"
         ];
-	    
+
 	    foreach($siteStartupData->sites as $siteIndex => $thisSite) {
             foreach($areasOfProgress as $thisArea) {
                 $completeTasks = 0;
@@ -1402,13 +1390,13 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 					unset($data->$key);
 			}
 		}
-		
+
 		// array for complete personnel data objects
 		$personnel = new \stdClass();
 		$reg_pid = $this->getProjectSetting('site_regulation_project');
 		$reg_project_event_table = \REDCap::getLogEventTable($reg_pid);
 		$reg_id_field = $this->getRecordIdField($reg_pid);
-		
+
 		// filter out older records if multiple exist for a given [role]
 		// throw exception if can't determine a single record for a given role
 		$candidates = [];
@@ -1422,7 +1410,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				if (empty($personnel_record_event->redcap_data_access_group)) {
 					continue;
 				}
-				
+
 				// create candidate objects, we're not sure which personnel record we're going to select to be the person for each role yet
 				// we want to select personnel based on the record's creation date (recent records will get chosen over older records) and their [role] field value
 				// we also want to make sure we select 1 and only 1 person for each role PER SITE (there is a 1:1 site:DAG correlation)
@@ -1431,7 +1419,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$candidate->$reg_id_field = $rid;
 				$candidate->role = $personnel_record_event->role;
 				$candidate->dag = $personnel_record_event->redcap_data_access_group;
-				
+
 				// try to determine when this record was created
 				$result = $this->query("SELECT ts FROM $reg_project_event_table WHERE project_id = ? AND data_values LIKE ? AND description = 'Create record'",
 					[$reg_pid,
@@ -1450,7 +1438,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$candidates[] = $candidate;
 			}
 		}
-		
+
 		// now that we have creation timestamps and role info, select our personnel records for each site (filter out others)
 		foreach($dags as $dag) {
 			foreach($this->personnel_roles as $i => $role) {
@@ -1470,27 +1458,27 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 						}
 					}
 				}
-				
+
 				if ($max_ts == 0 and $count_role > 1) {
 					// none of our personnel records have creation timestamps and there are more than one... so which one do we use? we can't determine
 					$this->addStartupError("The REVERSE-LC module couldn't determine which personnel record to use for role '$role' (most likely there are multiple personnel records with this role and the module can't determine when each were created)", "danger", $dag);
 				}
-				
+
 				if (empty($selected_candidate)) {
 					$this->addStartupError("The REVERSE-LC module couldn't determine which personnel record to use for role '$role' for site '$dag' -- most likely there are no records created with this [role] value assigned to DAG '$dag'.", "danger", $dag);
 				}
-				
+
 				$role_name = strtolower(preg_replace('/[ ]+/', '_', $role));
 				if (!$personnel->$dag) {
 					$personnel->$dag = new \stdClass();
 				}
 				$personnel->$dag->$role_name = $selected_candidate;
 			}
-			
+
 			// use all record-events in personnel data to fill in field info for candidates (matching on record id)
 			foreach($personnel->$dag as $role => &$data) {
 				$latest_instances = new \stdClass();	// holds max instance id found for repeating instances (we want to ignore older instances)
-				
+
 				// loop over instance info to record max instance id for each personnel form
 				foreach($personnel_data as $i => $record_data) {
 					if ($record_data->$reg_id_field == $data->$reg_id_field && isset($record_data->redcap_repeat_instrument)) {
@@ -1502,7 +1490,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 						}
 					}
 				}
-				
+
 				foreach($personnel_data as $i => $record_data) {
 					if (
 						// if it's the latest repeated instance for this form, or not a repeated form, and the record's id field matches this personnel: copy properties
@@ -1521,7 +1509,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				}
 			}
 		}
-		
+
 		$personnel_data = $personnel;
 	}
 	public function processStartupSiteData(&$sites, $personnel) {
@@ -1531,12 +1519,12 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 					unset($site->$key);
 			}
 		}
-		
+
 		$reg_pid = $this->getProjectSetting('site_regulation_project');
 		$reg_project = new \Project($reg_pid);
 		$personnel_event_id = array_key_first($reg_project->events[2]['events']);
 		$todays_date = new \DateTime(date("Y-m-d", time()));
-		
+
 		// calculate study admin cell values and classes
 		foreach($sites as &$site) {
 			$dag = $site->redcap_data_access_group;
@@ -1547,11 +1535,11 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				if (empty($personnel->$dag) || empty($personnel->$dag->$role)) {
                     $this->addStartupError("The REVERSE-LC module couldn't determine which record to use for $role_name role information for this site.", "danger", $dag);
 				}
-				
+
 				foreach($this->document_signoff_fields as $data_field => $check_field) {
 					// cbox value stored with suffix in personnel->dag->role
 					$check_field_prop = $check_field . "___1";
-					
+
 					// append prefixes where needed
 					if ($role == 'primary_coordinator') {
 						$db_data_field = 'ksp_' . $data_field;
@@ -1560,7 +1548,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 					} else {
 						$db_data_field = $data_field;
 					}
-					
+
 					if ($data_field == 'doa') {
 						if ($role == "pi") {
 							$db_data_field = 'doa_pi';
@@ -1570,7 +1558,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 							$db_data_field = 'pharm_doa_pi';
 						}
 					}
-					
+
 					$cells[$data_field] = [];
 					$cells[$data_field]['value'] = $site->$db_data_field;
 					if (empty($site->$db_data_field)) {
@@ -1585,7 +1573,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 								$cells[$data_field]['last_changed'] = substr(array_key_first($history), 0, -2);	// chop off last two digits -- timestamp was previously multiplied by 100
 								$checked_date = new \DateTime(date("Y-m-d", $cells[$data_field]['last_changed']));
 								$cells[$data_field]['value'] = $cells[$data_field]['value'] . " (" . $todays_date->diff($checked_date)->format("%a") . " days)";
-								
+
 								$cells[$data_field]['class'] = 'signoff green';
 							} else {
 								$cells[$data_field]['class'] = 'signoff red';
@@ -1601,7 +1589,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				}
 			}
 		}
-		
+
 		// add count of days between site engaged and site open for enrollment
 		foreach($sites as &$site) {
 			$site_start_ts = strtotime($site->site_engaged);
@@ -1615,16 +1603,16 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 	}
 	public function getDataHistoryLog($project_id, $record, $event_id, $field_name) {
 		// copied closely from \Form::getDataHistoryLog but allows dev to provide $project_id to target other projects
-		
+
 		global $lang;
-		
+
 		$maxInstance = $this->getMaxInstance($project_id, $record, $event_id, $field_name);
 		$instance = $maxInstance;
-		
+
 		$GLOBALS['Proj'] = $Proj = new \Project($project_id);
 		$longitudinal = $Proj->longitudinal;
 		$missingDataCodes = parseEnum($Proj->project['missing_data_codes']);
-		
+
 		// Set field values
 		$field_type = $Proj->metadata[$field_name]['element_type'];
         $field_val_type = $Proj->metadata[$field_name]['element_validation_type'];
@@ -1637,12 +1625,12 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		if ($isMC) {
 			$field_choices = parseEnum($Proj->metadata[$field_name]['element_enum']);
 		}
-		
+
 		$hasFieldViewingRights = true;
-		
+
 		// Format the field_name with escaped underscores for the query
 		$field_name_q = str_replace("_", "\\_", $field_name);
-		
+
 		// REPEATING FORMS/EVENTS: Check for "instance" number if the form is set to repeat
 		$instanceSql = "";
 		$isRepeatingFormOrEvent = $Proj->isRepeatingFormOrEvent($event_id, $Proj->metadata[$field_name]['form_name']);
@@ -1655,13 +1643,13 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				$instanceSql = "and data_values not like '[instance = %'";
 			}
 		}
-		
+
 		// Default
 		$time_value_array = array();
 		$arm = isset($Proj->eventInfo[$event_id]) ? $Proj->eventInfo[$event_id]['arm_num'] : getArm();
 
 		// Retrieve history and parse field data values to obtain value for specific field
-		$sql = "SELECT user, timestamp(ts) as ts, data_values, description, change_reason, event 
+		$sql = "SELECT user, timestamp(ts) as ts, data_values, description, change_reason, event
                 FROM ".\Logging::getLogEventTable($project_id)." WHERE project_id = " . $project_id . " and pk = '" . db_escape($record) . "'
 				and (
 				(
@@ -1677,17 +1665,17 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 								'Update survey response', 'Create survey response', 'Update record (Auto calculation)',
 								'Update survey response (Auto calculation)', 'Delete all record data for single form',
 								'Delete all record data for single event', 'Update record (API) (Auto calculation)')
-							and (data_values like '%\\n{$field_name_q} = %' or data_values like '{$field_name_q} = %' 
+							and (data_values like '%\\n{$field_name_q} = %' or data_values like '{$field_name_q} = %'
 								or data_values like '%\\n{$field_name_q}(%) = %' or data_values like '{$field_name_q}(%) = %')
 						)
 						or
 						(event = 'DOC_DELETE' and data_values = '$field_name')
 						or
-						(event = 'DOC_UPLOAD' and (data_values like '%\\n{$field_name_q} = %' or data_values like '{$field_name_q} = %' 
+						(event = 'DOC_UPLOAD' and (data_values like '%\\n{$field_name_q} = %' or data_values like '{$field_name_q} = %'
 													or data_values like '%\\n{$field_name_q}(%) = %' or data_values like '{$field_name_q}(%) = %'))
 					)
 				)
-				or 
+				or
 				(event = 'DELETE' and description like 'Delete record%' and (event_id is null or event_id in (".prep_implode(array_keys($Proj->events[$arm]['events'])).")))
 				)
 				order by log_event_id";
@@ -1799,7 +1787,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
             }
 
 			// Add to array (if match was found in this row)
-			if ($matchedThisRow) {			
+			if ($matchedThisRow) {
 				// If user does not have privileges to view field's form, redact data
 				if (!$hasFieldViewingRights) {
 					$this_value = "<code>".$lang['dataqueries_304']."</code>";
@@ -1839,21 +1827,21 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 		if (gettype($this->startup_errors) !== 'array') {
 			throw new \Exception("Tried to add a startup error without initializing startup_errors array. It's likely that a call to `addStartupError` is out of place.");
 		}
-		
+
 		// don't add duplicates
 		foreach($this->startup_errors as $error) {
 			if ($error['text'] == $error_message) {
 				return;
 			}
 		}
-		
+
 		$this->startup_errors[] = [
 			"text" => $error_message,
 			"class" => $error_class,
 			"dag" => $dag
 		];
 	}
-	
+
 	// hooks
 	public function redcap_module_link_check_display($pid, $link) {
 		if ($link['name'] == 'REVERSE_LC Dashboard') {
