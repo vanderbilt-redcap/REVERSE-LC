@@ -52,7 +52,7 @@ echo $template->render([
 	"siteStartupData"      => $siteStartupData,
     "siteCompletionData"   => $siteCompletionData,
     'randArmLabels'        => $randArmlabels,
-	"cssPath"              => $module->getUrl("css/style.css"),
+	"css_path"              => $module->getUrl("css/style.css"),
 	"js_path_1"            => $module->getUrl("js/dashboard.js"),
 	"logo_link"            => $module->getUrl("images/main_logo.png")
 ]);
