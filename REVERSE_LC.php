@@ -89,7 +89,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 	public $personnel_roles = [
 		'PI',
 		'Primary Coordinator',
-		'Primary dispensing pharmacist'
+		'Primary Pharmacist'
 	];
 	public $document_signoff_fields = [
 		'cv' => 'cv_review_vcc',
@@ -1252,9 +1252,10 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			}
 		}
 		unset($data);
-		
 		$this->processStartupPersonnelData($startup_data->personnel, $startup_data->dags);
 		$this->processStartupSiteData($startup_data->sites, $startup_data->personnel);
+		
+
 		$startup_data->errors = $this->startup_errors;
 		
 		return $startup_data;
@@ -1521,7 +1522,6 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				}
 			}
 		}
-		
 		$personnel_data = $personnel;
 	}
 	public function processStartupSiteData(&$sites, $personnel) {
@@ -1531,7 +1531,6 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 					unset($site->$key);
 			}
 		}
-		
 		$reg_pid = $this->getProjectSetting('site_regulation_project');
 		$reg_project = new \Project($reg_pid);
 		$personnel_event_id = array_key_first($reg_project->events[2]['events']);
