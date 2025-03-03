@@ -1,19 +1,19 @@
 <div class="row justify-content-center  text-center content-menu mb-4" id="screeningMenu">
     <div class="col-2">
-        <button data-report='screening_log' onclick="showReport(this)" class="border-0 h-100 p-4 btn btn-primary bg-teal">Screening Log Report</button>
+        <button data-report='screening_log' onclick="showReport(this)" class="border-0 h-100 p-4 btn btn-primary bg-teal">Pre-Screening Log Report</button>
     </div>
     <div class="col-2">
-        <button data-report='exclusion' onclick="showReport(this)" class="border-0 h-100 p-4 btn btn-primary bg-green">Exclusion Report</button>
+        <button data-report='exclusion' onclick="showReport(this)" class="border-0 h-100 p-4 btn btn-primary bg-green">Pre-Screening Exclusion Report</button>
     </div>
     <div class="col-2">
-        <button data-report='screen_fail' onclick="showReport(this)"class="border-0 h-100 p-4 btn btn-primary bg-orange">Screening Fail Report</button>
+        <button data-report='screen_fail' onclick="showReport(this)"class="border-0 h-100 p-4 btn btn-primary bg-orange">Pre-Screening Fail Report</button>
    </div>   
 </div>
 
 <div class="content-container d-none" data-menu='screeningMenu' id="screening_log">
     <div class="row">
         <div class="col-12 text-center">
-            <h3 class="mb-4">Screening Log Report</h3>
+            <h3 class="mb-4">Pre-Screening Log Report</h3>
         </div>    
         <div class="col-6">
             {# dropdown #}
@@ -29,8 +29,8 @@
                 <thead>
                     <tr>
                         <th>Week</th>
-                        <th>Sum of Prescreened</th>
-                        <th>Cumulative Prescreened</th>
+                        <th>Sum of Pre-Screened</th>
+                        <th>Cumulative Pre-Screened</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -70,7 +70,7 @@
                     data: {
                         labels: week_labels,
                         datasets: [{
-                            label: 'Participants Screened',
+                            label: 'Participants Pre-Screened',
                             data: data1,
                             {# backgroundColor: 'rgba(255, 99, 132, 0.2)', #}
                             borderColor: 'rgba(13, 127, 133, 1)',
@@ -80,7 +80,7 @@
                                 anchor: 'center'
                             }
                         },{
-                            label: 'Cumulative Screened',
+                            label: 'Cumulative Pre-Screened',
                             data: data2,
                             backgroundColor: 'rgba(180, 199, 231, 1)',
                             borderWidth: 1,
@@ -94,7 +94,7 @@
                             display: true,
                             fontSize: 24,
                             fontStyle: 'normal',
-                            text: 'Participant Screening'
+                            text: 'Participant Pre-Screening'
                         },
                         scales: {
                             yAxes: [{
@@ -112,7 +112,7 @@
 <div class="content-container d-none" data-menu='screeningMenu' id="exclusion">
     <div class="row">
         <div class="col-12 text-center">
-            <h3 class="mb-3">Exclusion Report</h3>
+            <h3 class="mb-3">Pre-Screening Exclusion Report</h3>
         </div>
         <div class="col-6">
             {# table #}
@@ -196,7 +196,7 @@
 <div class="content-container d-none" data-menu='screeningMenu' id="screen_fail">
     <div class="row">
         <div class="col-12 text-center">
-            <h3 class="mb-3">Screen Fail Report</h3>
+            <h3 class="mb-3">Pre-Screening Fail Report</h3>
         </div>
         <div class="col-6">
             {# table #}
@@ -243,7 +243,7 @@
                     data: {
                         labels: fail_labels,
                         datasets: [{
-                            label: 'Screening Failures',
+                            label: 'Pre-Screening Failures',
                             data: fail_counts,
                             borderColor: 'rgba(13, 127, 133, 1)',
                             backgroundColor: 'rgba(13, 127, 133, 1)',

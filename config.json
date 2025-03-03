@@ -42,7 +42,7 @@
 		},
 		{
 			"key": "screening_project",
-			"name": "Screening Project ID",
+			"name": "Pre-Screening Project ID",
 			"required": false,
 			"type": "project-id",
 			"repeatable": false

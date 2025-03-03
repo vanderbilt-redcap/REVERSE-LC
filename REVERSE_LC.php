@@ -90,7 +90,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 	public $personnel_roles = [
 		'PI',
 		'Primary Coordinator',
-		'Primary dispensing pharmacist'
+		'Primary Pharmacist'
 	];
 	public $document_signoff_fields = [
 		'cv' => 'cv_review_vcc',
@@ -286,8 +286,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 	{
         if(!$this->screening_data) {
             if(!$projectId) {
-				$edcProjectId = $this->getProjectSetting('edc_project');
-                $projectId    = $edcProjectId;
+				$projectId = $_GET['pid'];
             }
 
             $screeningProjectId = $this->getProjectSetting("screening_project", $projectId);
@@ -767,6 +766,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 	}
 	public function getScreeningLogData($site = null, $first_day_of_week = 0) {
 		// determine earliest screened date (upon which weeks array will be based)
+		
 		$screening_data = $this->getScreeningData();
 		$first_date = date("Y-m-d");
 		$last_date = date("Y-m-d", 0);
@@ -810,13 +810,14 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 
 			// count records that were screened this week
 			$ts_a = strtotime($date1);
-			$ts_b = strtotime("+24 hours", strtotime($date2));
+			$ts_b = strtotime("+23 hours 59 minutes 59 seconds", strtotime($date2));
 			// echo "\$date1, \$date2, \$ts_a, \$ts_b: $date1, $date2, $ts_a, $ts_b\n";
 			foreach ($screening_data as $record) {
 				$ts_x = strtotime($record->dos);
 				$site_match_or_null = $site === null ? true : $record->redcap_data_access_group == $site;
-				if ($ts_a <= $ts_x and $ts_x <= $ts_b and $site_match_or_null)
+				if ($ts_a <= $ts_x && $ts_x <= $ts_b && $site_match_or_null) {
 					$screened_this_week++;
+				}
 			}
 			$total_screened += $screened_this_week;
 
@@ -1240,7 +1241,6 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 			}
 		}
 		unset($data);
-
 		$this->processStartupPersonnelData($startup_data->personnel, $startup_data->dags);
 		$this->processStartupSiteData($startup_data->sites, $startup_data->personnel);
 		$startup_data->errors = $this->startup_errors;
@@ -1509,7 +1509,6 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				}
 			}
 		}
-
 		$personnel_data = $personnel;
 	}
 	public function processStartupSiteData(&$sites, $personnel) {
@@ -1519,7 +1518,6 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 					unset($site->$key);
 			}
 		}
-
 		$reg_pid = $this->getProjectSetting('site_regulation_project');
 		$reg_project = new \Project($reg_pid);
 		$personnel_event_id = array_key_first($reg_project->events[2]['events']);
