@@ -1331,12 +1331,12 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 					"primary_coordinator.gcp.value",
 					"primary_coordinator.hsp.value",
 					"primary_coordinator.training.value",
-                    "primary_dispensing_pharmacist.cv.value",
-					"primary_dispensing_pharmacist.doa.value",
-					"primary_dispensing_pharmacist.license.value",
-					"primary_dispensing_pharmacist.gcp.value",
-					"primary_dispensing_pharmacist.hsp.value",
-					"primary_dispensing_pharmacist.training.value",
+                    "primary_pharmacist.cv.value",
+					"primary_pharmacist.doa.value",
+					"primary_pharmacist.license.value",
+					"primary_pharmacist.gcp.value",
+					"primary_pharmacist.hsp.value",
+					"primary_pharmacist.training.value",
                 ]
             ]
         ];
@@ -1547,15 +1547,13 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 				if (empty($personnel->$dag) || empty($personnel->$dag->$role)) {
                     $this->addStartupError("The REVERSE-LC module couldn't determine which record to use for $role_name role information for this site.", "danger", $dag);
 				}
-				
 				foreach($this->document_signoff_fields as $data_field => $check_field) {
 					// cbox value stored with suffix in personnel->dag->role
 					$check_field_prop = $check_field . "___1";
-					
 					// append prefixes where needed
 					if ($role == 'primary_coordinator') {
 						$db_data_field = 'ksp_' . $data_field;
-					} elseif ($role == 'primary_dispensing_pharmacist') {
+					} elseif ($role == 'primary_pharmacist') {
 						$db_data_field = 'pharm_' . $data_field;
 					} else {
 						$db_data_field = $data_field;
@@ -1566,7 +1564,7 @@ class REVERSE_LC extends \ExternalModules\AbstractExternalModule {
 							$db_data_field = 'doa_pi';
 						} elseif ($role == "primary_coordinator") {
 							$db_data_field = 'pi_ksp_doa';
-						} elseif ($role == "primary_dispensing_pharmacist") {
+						} elseif ($role == "primary_pharmacist") {
 							$db_data_field = 'pharm_doa_pi';
 						}
 					}
