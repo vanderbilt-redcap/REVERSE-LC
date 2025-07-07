@@ -2,7 +2,6 @@
 define("SCREENING_LOG_DATA_AJAX_URL", $module->getUrl('ajax/getScreeningLogData.php'));
 define("ENROLLMENT_CHART_DATA_AJAX_URL", $module->getUrl('ajax/getEnrollmentChartData.php'));
 
-require_once(__DIR__."/vendor/autoload.php");
 $loader = new \Twig\Loader\FilesystemLoader(__DIR__."/templates");
 $twig = new \Twig\Environment($loader);
 
