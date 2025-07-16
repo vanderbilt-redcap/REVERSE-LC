@@ -43,9 +43,9 @@
 							<th>FPE</th>
 							<th>LPE</th>
 							<th>Pre-Screened</th>
+							<th>Consented</th>
 							<th>Eligible</th>
 							<th>Randomized</th>
-							<th>Consented</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -66,9 +66,9 @@
 								<td>{{ totalDetails["fpe"] }}</td>
 								<td>{{ totalDetails["lpe"] }}</td>
 								<td>{{ totalDetails["screened"] }}</td>
+								<td>{{ totalDetails["enroll_yn"] }}</td>
 								<td>{{ totalDetails["eligible"] }}</td>
 								<td>{{ totalDetails["randomized"] }}</td>
-								<td>{{ totalDetails["enroll_yn"] }}</td>
 							</tr>
 						{% endfor %}
 						<tr class="first_row">
@@ -88,9 +88,9 @@
 								<td>{{ siteDetails["fpe"] }}</td>
 								<td>{{ siteDetails["lpe"] }}</td>
 								<td>{{ siteDetails["screened"] }}</td>
+								<td>{{ siteDetails["enroll_yn"] }}</td>
 								<td>{{ siteDetails["eligible"] }}</td>
 								<td>{{ siteDetails["randomized"] }}</td>
-								<td>{{ siteDetails["enroll_yn"] }}</td>
 							</tr>
 						{% endfor %}
 					</tbody>
